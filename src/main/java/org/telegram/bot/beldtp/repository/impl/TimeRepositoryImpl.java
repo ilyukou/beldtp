@@ -27,4 +27,9 @@ public class TimeRepositoryImpl implements TimeRepository {
     public void delete(Time time) {
         timeJpaRepository.delete(time);
     }
+
+    @Override
+    public Time get(Long id) {
+        return timeJpaRepository.findById(id).orElse(null);
+    }
 }

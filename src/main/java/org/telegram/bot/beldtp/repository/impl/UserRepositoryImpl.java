@@ -35,4 +35,39 @@ public class UserRepositoryImpl implements UserRepository {
     public void delete(User user) {
         userJpaRepository.delete(user);
     }
+
+    @Override
+    public User get(Long id) {
+        return userJpaRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void delete(Long id) {
+        userJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<User> getAll() {
+        return userJpaRepository.findAll();
+    }
+
+    @Override
+    public boolean isExist(Long id) {
+        return userJpaRepository.existsById(id);
+    }
+
+    @Override
+    public long size(UserRole userRole) {
+        return userJpaRepository.findByRole(userRole).size();
+    }
+
+    @Override
+    public long size() {
+        return userJpaRepository.count();
+    }
+
+    @Override
+    public long size(Language language) {
+        return userJpaRepository.findByLanguage(language).size();
+    }
 }

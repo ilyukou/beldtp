@@ -1,4 +1,4 @@
-package org.telegram.bot.beldtp.repository.interf;
+package org.telegram.bot.beldtp.service.interf.model;
 
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.User;
@@ -6,15 +6,9 @@ import org.telegram.bot.beldtp.model.UserRole;
 
 import java.util.List;
 
-public interface UserRepository {
-
-    List<User> get(UserRole userRole);
-
-    List<User> get(Language language);
+public interface UserService {
 
     User save(User user);
-
-    void delete(User user);
 
     User get(Long id);
 

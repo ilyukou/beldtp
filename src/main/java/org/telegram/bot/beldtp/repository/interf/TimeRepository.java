@@ -9,4 +9,6 @@ public interface TimeRepository {
     Time save(Time time);
 
     void delete(Time time);
+
+    Time get(Long id);
 }

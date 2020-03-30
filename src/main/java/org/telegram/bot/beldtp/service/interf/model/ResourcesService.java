@@ -1,19 +1,22 @@
-package org.telegram.bot.beldtp.repository.interf;
+package org.telegram.bot.beldtp.service.interf.model;
 
 import org.telegram.bot.beldtp.model.Resource;
 import org.telegram.bot.beldtp.model.Storage;
 import org.telegram.bot.beldtp.model.StorageType;
 
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 
-public interface ResourceRepository {
-    List<Resource> get(Storage storage);
+public interface ResourcesService {
 
     Resource save(Resource resource);
-
-    void delete(Resource resource);
 
     Resource get(Long id);
 
     List<Resource> get(StorageType storageType);
+
+    List<Resource> get(Storage storage);
+
+    InputStream get(Resource resource);
 }

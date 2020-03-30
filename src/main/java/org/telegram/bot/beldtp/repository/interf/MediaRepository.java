@@ -1,6 +1,5 @@
 package org.telegram.bot.beldtp.repository.interf;
 
-
 import org.telegram.bot.beldtp.model.Media;
 
 import java.util.List;
@@ -11,4 +10,6 @@ public interface MediaRepository {
     Media save(Media media);
 
     void delete(Media media);
+
+    List<Media> getAll();
 }

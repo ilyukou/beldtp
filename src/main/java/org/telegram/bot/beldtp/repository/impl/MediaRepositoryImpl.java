@@ -28,4 +28,9 @@ public class MediaRepositoryImpl implements MediaRepository {
     public void delete(Media media) {
         mediaJpaRepository.delete(media);
     }
+
+    @Override
+    public List<Media> getAll() {
+        return mediaJpaRepository.findAll();
+    }
 }

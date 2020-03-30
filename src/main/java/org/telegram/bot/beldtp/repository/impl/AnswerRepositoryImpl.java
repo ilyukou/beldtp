@@ -32,4 +32,9 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     public void delete(Answer answer) {
         answerJpaRepository.delete(answer);
     }
+
+    @Override
+    public Answer get(Long id) {
+        return answerJpaRepository.findById(id).orElse(null);
+    }
 }
