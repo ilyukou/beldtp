@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.repository.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
@@ -10,7 +11,7 @@ import org.telegram.bot.beldtp.repository.jpa.UserJpaRepository;
 
 import java.util.List;
 
-@Service
+@Repository
 public class UserRepositoryImpl implements UserRepository {
 
     @Autowired

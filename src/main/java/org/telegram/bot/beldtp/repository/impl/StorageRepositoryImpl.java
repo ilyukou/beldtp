@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.repository.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Storage;
 import org.telegram.bot.beldtp.model.StorageType;
 import org.telegram.bot.beldtp.repository.interf.StorageRepository;
@@ -9,7 +10,7 @@ import org.telegram.bot.beldtp.repository.jpa.StorageJpaRepository;
 
 import java.util.List;
 
-@Service
+@Repository
 public class StorageRepositoryImpl implements StorageRepository {
 
     @Autowired

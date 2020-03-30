@@ -4,6 +4,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.IncidentType;
 import org.telegram.bot.beldtp.model.User;
@@ -12,7 +13,7 @@ import org.telegram.bot.beldtp.repository.jpa.IncidentJpaRepository;
 
 import java.util.List;
 
-@Service
+@Repository
 public class IncidentRepositoryImpl implements IncidentRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IncidentRepositoryImpl.class);

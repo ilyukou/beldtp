@@ -2,12 +2,13 @@ package org.telegram.bot.beldtp.repository.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Answer;
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.repository.interf.AnswerRepository;
 import org.telegram.bot.beldtp.repository.jpa.AnswerJpaRepository;
 
-@Service
+@Repository
 public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Autowired

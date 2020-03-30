@@ -2,13 +2,14 @@ package org.telegram.bot.beldtp.repository.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Media;
 import org.telegram.bot.beldtp.repository.interf.MediaRepository;
 import org.telegram.bot.beldtp.repository.jpa.MediaJpaRepository;
 
 import java.util.List;
 
-@Service
+@Repository
 public class MediaRepositoryImpl implements MediaRepository {
 
     @Autowired

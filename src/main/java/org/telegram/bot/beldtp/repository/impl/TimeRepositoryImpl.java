@@ -2,12 +2,13 @@ package org.telegram.bot.beldtp.repository.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.Time;
 import org.telegram.bot.beldtp.repository.interf.TimeRepository;
 import org.telegram.bot.beldtp.repository.jpa.TimeJpaRepository;
 
-@Service
+@Repository
 public class TimeRepositoryImpl implements TimeRepository {
 
     @Autowired
