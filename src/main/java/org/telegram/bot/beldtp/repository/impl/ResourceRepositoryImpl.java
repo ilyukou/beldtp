@@ -44,10 +44,13 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     @Override
     public List<Resource> get(StorageType storageType) {
-        List<Resource> resources = new LinkedList<>();
+        return new LinkedList<>(storageService.get(storageType).getResources());
+    }
 
-        storageService.get(storageType).forEach(storage -> resources.addAll(storage.getResources()));
-
-        return resources;
+    @Override
+    public boolean isExist(Resource resource) {
+        return resource != null
+                && resource.getId() != null
+                && resourceJpaRepository.existsById(resource.getId());
     }
 }

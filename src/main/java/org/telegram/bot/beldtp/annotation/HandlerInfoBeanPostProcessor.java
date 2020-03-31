@@ -34,23 +34,23 @@ public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
             throw new BeanNotOfRequiredTypeException(beanName, Handler.class, bean.getClass());
         }
 
-        Handler logicComponent = (Handler) bean;
+        Handler handler = (Handler) bean;
 
-        if(handlerMap.isExist(logicComponent.getType())){
-            String e = Handler.class.getName()+ " with such type are exist. " +
-                    "Type: "+logicComponent.getType() + " . Class with such key is "
-                    + handlerMap.get(logicComponent.getType()).getClass().getName();
+        if(handlerMap.isExist(handler.getType())){
+            String e = Handler.class.getName() + " with such type are exist. " +
+                    "Type: " + handler.getType() + " . Class with such key is "
+                    + handlerMap.get(handler.getType()).getClass().getName();
 
             LOGGER.error(e);
             throw new IllegalArgumentException(e);
         }
 
-        logicComponent.setType(mapper.type());
-        logicComponent.setAccessRight(mapper.accessRight());
+        handler.setType(mapper.type());
+        handler.setAccessRight(mapper.accessRight());
 
-        handlerMap.put(logicComponent);
+        handlerMap.put(handler);
 
-        return logicComponent;
+        return handler;
 
 
     }

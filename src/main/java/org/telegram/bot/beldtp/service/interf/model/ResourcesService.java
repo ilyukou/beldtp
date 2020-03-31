@@ -18,5 +18,7 @@ public interface ResourcesService {
 
     List<Resource> get(Storage storage);
 
-    InputStream get(Resource resource);
+    byte[] get(Resource resource);
+
+    Resource save(byte[] bytes, Resource resource);
 }

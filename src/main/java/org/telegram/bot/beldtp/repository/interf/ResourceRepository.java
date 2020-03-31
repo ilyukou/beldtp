@@ -16,4 +16,6 @@ public interface ResourceRepository {
     Resource get(Long id);
 
     List<Resource> get(StorageType storageType);
+
+    boolean isExist(Resource resource);
 }

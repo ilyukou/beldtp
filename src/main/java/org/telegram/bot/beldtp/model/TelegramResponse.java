@@ -1,56 +1,119 @@
 package org.telegram.bot.beldtp.model;
 
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.io.Serializable;
-
 @Component
-public class TelegramResponse<T extends Serializable> {
+public class TelegramResponse {
 
-    private PartialBotApiMethod<T> partialBotApiMethod;
-
-    private BotApiMethod<T> botApiMethod;
-
-    private Update update;
-
-    public TelegramResponse(PartialBotApiMethod<T> partialBotApiMethod, Update update) {
-        this.partialBotApiMethod = partialBotApiMethod;
-        this.update = update;
-    }
-
-    public TelegramResponse(BotApiMethod<T> botApiMethod, Update update) {
-        this.botApiMethod = botApiMethod;
-        this.update = update;
-    }
+    private DeleteMessage deleteMessage;
+    private SendMessage sendMessage;
+    private AnswerCallbackQuery answerCallbackQuery;
+    private EditMessageText editMessageText;
+    private EditMessageReplyMarkup editMessageReplyMarkup;
+    private SendMediaGroup sendMediaGroup;
 
     public TelegramResponse() {
-
+    }
+    public TelegramResponse(SendMessage sendMessage) {
+        this.sendMessage = sendMessage;
     }
 
-    public PartialBotApiMethod<T> getPartialBotApiMethod() {
-        return partialBotApiMethod;
+    public TelegramResponse(SendMediaGroup sendMediaGroup) {
+        this.sendMediaGroup = sendMediaGroup;
     }
 
-    public void setPartialBotApiMethod(PartialBotApiMethod<T> partialBotApiMethod) {
-        this.partialBotApiMethod = partialBotApiMethod;
+    public TelegramResponse(AnswerCallbackQuery answerCallbackQuery) {
+        this.answerCallbackQuery = answerCallbackQuery;
     }
 
-    public BotApiMethod<T> getBotApiMethod() {
-        return botApiMethod;
+    public TelegramResponse(EditMessageText EditMessageText) {
+        this.editMessageText = EditMessageText;
     }
 
-    public void setBotApiMethod(BotApiMethod<T> botApiMethod) {
-        this.botApiMethod = botApiMethod;
+    public TelegramResponse(EditMessageReplyMarkup editMessageReplyMarkup) {
+        this.editMessageReplyMarkup = editMessageReplyMarkup;
     }
 
-    public Update getUpdate() {
-        return update;
+    public TelegramResponse(DeleteMessage deleteMessage) {
+        this.deleteMessage = deleteMessage;
     }
 
-    public void setUpdate(Update update) {
-        this.update = update;
+    public DeleteMessage getDeleteMessage() {
+        return deleteMessage;
+    }
+
+    public void setDeleteMessage(DeleteMessage deleteMessage) {
+        this.deleteMessage = deleteMessage;
+    }
+
+    public boolean hasSendMessage() {
+        return this.sendMessage != null;
+    }
+
+    public boolean hasAnswerCallbackQuery() {
+        return this.answerCallbackQuery != null;
+    }
+
+    public boolean hasEditMessageText() {
+        return this.editMessageText != null;
+    }
+
+    public boolean hasEditMessageReplyMarkup() {
+        return this.editMessageReplyMarkup != null;
+    }
+
+    public SendMessage getSendMessage() {
+        return sendMessage;
+    }
+
+    public void setSendMessage(SendMessage sendMessage) {
+        this.sendMessage = sendMessage;
+    }
+
+    public AnswerCallbackQuery getAnswerCallbackQuery() {
+        return answerCallbackQuery;
+    }
+
+    public void setAnswerCallbackQuery(AnswerCallbackQuery answerCallbackQuery) {
+        this.answerCallbackQuery = answerCallbackQuery;
+    }
+
+    public EditMessageText getEditMessageText() {
+        return editMessageText;
+    }
+
+    public void setEditMessageText(EditMessageText editMessageText) {
+        this.editMessageText = editMessageText;
+    }
+
+    public EditMessageReplyMarkup getEditMessageReplyMarkup() {
+        return editMessageReplyMarkup;
+    }
+
+    public void setEditMessageReplyMarkup(EditMessageReplyMarkup editMessageReplyMarkup) {
+        this.editMessageReplyMarkup = editMessageReplyMarkup;
+    }
+
+    public boolean hasSendMediaGroup() {
+        return this.sendMediaGroup != null;
+    }
+
+    public SendMediaGroup getSendMediaGroup() {
+        return sendMediaGroup;
+    }
+
+    public void setSendMediaGroup(SendMediaGroup sendMediaGroup) {
+        this.sendMediaGroup = sendMediaGroup;
+    }
+
+    public boolean hasDeleteMessage() {
+        return this.deleteMessage != null;
     }
 }

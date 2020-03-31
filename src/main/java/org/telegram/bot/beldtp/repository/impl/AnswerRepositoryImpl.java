@@ -8,6 +8,8 @@ import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.repository.interf.AnswerRepository;
 import org.telegram.bot.beldtp.repository.jpa.AnswerJpaRepository;
 
+import java.util.List;
+
 @Repository
 public class AnswerRepositoryImpl implements AnswerRepository {
 
@@ -15,7 +17,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     private AnswerJpaRepository answerJpaRepository;
 
     @Override
-    public Answer get(String type) {
+    public List<Answer> get(String type) {
         return answerJpaRepository.findByType(type);
     }
 

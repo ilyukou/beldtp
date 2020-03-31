@@ -16,23 +16,12 @@ public class StorageServiceImpl implements StorageService {
     private StorageRepository storageRepository;
 
     @Override
-    public List<Storage> get(StorageType storageType) {
+    public Storage get(StorageType storageType) {
         return storageRepository.get(storageType);
     }
 
     @Override
     public boolean isExist(StorageType type) {
         return storageRepository.isExist(type);
-    }
-
-    @Override
-    public Storage getOne(StorageType storageType) {
-        List<Storage> storage = storageRepository.get(storageType);
-
-        if(storage == null || storage.size() == 0){
-            return null;
-        }
-
-        return storage.get(0);
     }
 }

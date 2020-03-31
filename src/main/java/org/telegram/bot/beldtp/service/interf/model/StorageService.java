@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface StorageService {
 
-    List<Storage> get(StorageType storageType);
+    Storage get(StorageType storageType);
 
     boolean isExist(StorageType type);
-
-    Storage getOne(StorageType storageType);
 }

@@ -17,20 +17,16 @@ public class StorageRepositoryImpl implements StorageRepository {
     private StorageJpaRepository storageJpaRepository;
 
     @Override
-    public List<Storage> get(StorageType type) {
-        return storageJpaRepository.findStorageByType(type);
-    }
+    public Storage get(StorageType type) {
+        Storage storage = storageJpaRepository.findByType(type);
 
-    @Override
-    public Storage getOne(StorageType type) {
-        List<Storage> storage = get(type);
-
-        if(storage == null || storage.size() == 0){
-            return null;
+        if(storage != null){
+            return storage;
+        }else {
+            return storageJpaRepository.save(new Storage(type));
         }
-
-        return storage.get(0);
     }
+
 
     @Override
     public Storage save(Storage storage) {
@@ -44,6 +40,6 @@ public class StorageRepositoryImpl implements StorageRepository {
 
     @Override
     public boolean isExist(StorageType type) {
-        return getOne(type) != null;
+        return get(type) != null;
     }
 }

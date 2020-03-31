@@ -7,6 +7,7 @@ import org.telegram.bot.beldtp.repository.interf.IncidentRepository;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 
 import java.util.*;
 
@@ -44,5 +45,15 @@ public class IncidentServiceImpl implements IncidentService {
     @Override
     public Incident getDraft(User user) {
         return incidentRepository.getDraft(user);
+    }
+
+    @Override
+    public List<Incident> get(IncidentType type) {
+        return incidentRepository.get(type);
+    }
+
+    @Override
+    public SendMediaGroup getSendMediaGroup(Incident incident, String url) {
+        return null;
     }
 }

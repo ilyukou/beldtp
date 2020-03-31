@@ -7,6 +7,8 @@ import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.repository.interf.AnswerRepository;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 
+import java.util.List;
+
 @Service
 public class AnswerServiceImpl implements AnswerService {
 
@@ -29,7 +31,7 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public Answer get(String type) {
+    public List<Answer> get(String type) {
         return answerRepository.get(type);
     }
 

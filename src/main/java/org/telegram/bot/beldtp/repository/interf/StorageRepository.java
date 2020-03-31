@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface StorageRepository {
 
-    List<Storage> get(StorageType type);
-
-    Storage getOne(StorageType type);
+    Storage get(StorageType type);
 
     Storage save(Storage storage);
 

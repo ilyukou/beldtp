@@ -8,6 +8,4 @@ import java.util.List;
 
 public interface StorageJpaRepository extends JpaRepository<Storage, Long> {
     Storage findByType(StorageType type);
-
-    List<Storage> findStorageByType(StorageType type);
 }

@@ -3,6 +3,8 @@ package org.telegram.bot.beldtp.service.interf.model;
 import org.telegram.bot.beldtp.model.Answer;
 import org.telegram.bot.beldtp.model.Language;
 
+import java.util.List;
+
 public interface AnswerService {
     Answer save(Answer answer);
 
@@ -10,7 +12,7 @@ public interface AnswerService {
 
     Answer get(Long id);
 
-    Answer get(String type);
+    List<Answer> get(String type);
 
     Answer get(String type, Language language);
 }

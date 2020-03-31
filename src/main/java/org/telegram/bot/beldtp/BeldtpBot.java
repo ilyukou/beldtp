@@ -2,10 +2,15 @@ package org.telegram.bot.beldtp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
+import org.telegram.bot.beldtp.model.TelegramResponse;
+import org.telegram.bot.beldtp.model.User;
+import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -15,6 +20,12 @@ import javax.annotation.PostConstruct;
 public class BeldtpBot extends TelegramLongPollingBot {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeldtpBot.class);
+
+    @Autowired
+    private StartHandler startHandler;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${bot.token}")
     private String token;
@@ -34,20 +45,55 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        try {
-            SendMessage sendMessage = new SendMessage();
 
-            sendMessage.setChatId(update.getMessage().getFrom().getId().longValue());
-            sendMessage.setText(update.getMessage().getText());
+        User user = userService.get(UpdateUtil.getChatId(update));
 
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            LOGGER.error("Failed to send message", e);
+        if(user == null){
+            executeTelegramResponse(startHandler.getMessage(null, update));
+        } else {
+            executeTelegramResponse(
+                    startHandler
+                        .getHandlerByStatus(user.peekStatus())
+                        .handle(user,update)
+            );
         }
     }
 
     @PostConstruct
     public void start() {
         LOGGER.info("username: {}, token: {}", username, token);
+    }
+
+    public void executeTelegramResponse(TelegramResponse telegramResponse) {
+        try {
+
+            if (telegramResponse.hasSendMessage()) {
+                execute(telegramResponse.getSendMessage());
+
+            } else if (telegramResponse.hasAnswerCallbackQuery()) {
+                execute(telegramResponse.getAnswerCallbackQuery());
+
+            } else if (telegramResponse.hasEditMessageText()) {
+                execute(telegramResponse.getEditMessageText());
+
+            } else if (telegramResponse.hasDeleteMessage()) {
+                execute(telegramResponse.getDeleteMessage());
+
+            } else if (telegramResponse.hasEditMessageReplyMarkup()) {
+                execute(telegramResponse.getEditMessageReplyMarkup());
+
+            } else if (telegramResponse.hasEditMessageText()) {
+                execute(telegramResponse.getEditMessageText());
+
+            } else if (telegramResponse.hasSendMediaGroup()) {
+                execute(telegramResponse.getSendMediaGroup());
+
+            } else {
+
+                LOGGER.error("TelegramResponse is null");
+            }
+        } catch (TelegramApiException e) {
+            LOGGER.error("Failed to send message", e);
+        }
     }
 }
