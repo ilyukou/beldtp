@@ -146,4 +146,37 @@ public class Location {
     public void setState(String state) {
         this.state = state;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        if(getLongitude() != null && getLatitude() != null){
+            builder.append("[Месцазнаходжанне](https://www.google.com/maps?q=")
+                    .append(getLatitude()).append(",").append(getLongitude()).append(")").append("\n");
+        }
+
+        if(getCountry() != null){
+            builder.append(getCountry()).append("\n");
+        }
+
+
+        if(getCity() != null){
+            builder.append(getCity()).append(", ");
+        }
+
+        if(getState() != null){
+            builder.append(getState()).append("\n");
+        }
+
+        if(getRoad() != null){
+            builder.append(getRoad()).append(" ");
+        }
+
+        if(getHouseNumber() != null){
+            builder.append(getHouseNumber()).append("\n");
+        }
+
+        return builder.toString();
+    }
 }

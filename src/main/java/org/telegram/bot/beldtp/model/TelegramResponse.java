@@ -12,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class TelegramResponse {
 
+    private Update update;
+
     private DeleteMessage deleteMessage;
     private SendMessage sendMessage;
     private AnswerCallbackQuery answerCallbackQuery;
@@ -33,8 +35,9 @@ public class TelegramResponse {
         this.answerCallbackQuery = answerCallbackQuery;
     }
 
-    public TelegramResponse(EditMessageText EditMessageText) {
+    public TelegramResponse(EditMessageText EditMessageText, Update update) {
         this.editMessageText = EditMessageText;
+        this.update = update;
     }
 
     public TelegramResponse(EditMessageReplyMarkup editMessageReplyMarkup) {
@@ -115,5 +118,13 @@ public class TelegramResponse {
 
     public boolean hasDeleteMessage() {
         return this.deleteMessage != null;
+    }
+
+    public Update getUpdate() {
+        return update;
+    }
+
+    public void setUpdate(Update update) {
+        this.update = update;
     }
 }

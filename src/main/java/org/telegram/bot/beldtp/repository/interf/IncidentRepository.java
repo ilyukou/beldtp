@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.repository.interf;
 
 import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.IncidentType;
+import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface IncidentRepository {
     long count();
 
     Incident getDraft(User user);
+
+    long size(IncidentType incidentType);
 }

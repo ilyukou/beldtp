@@ -22,7 +22,7 @@ public class SettingHandler extends Handler {
 
     @Override
     public TelegramResponse handle(User user, Update update) {
-        return transaction(update);
+        return transaction(user,update);
     }
 
     @Override

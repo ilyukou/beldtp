@@ -14,11 +14,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public abstract class Handler {
+
+    private static final int MAX_HANDLER_IN_ROW = 2;
 
     @Autowired
     private AnswerService answerService;
@@ -36,14 +39,45 @@ public abstract class Handler {
     private String type;
 
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user){
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        markupInline.setKeyboard(getAvailableHandlerForUser(user.getRole())
-                .parallelStream()
-                .map(handler -> Collections.singletonList(new InlineKeyboardButton()
-                        .setText(answerService.get(handler.getType(), user.getLanguage()).getLabel())
-                        .setCallbackData(answerService.get(handler.getType(), user.getLanguage()).getType())))
-                .collect(Collectors.toList()));
-        return markupInline;
+//        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+//        markupInline.setKeyboard(getAvailableHandlerForUser(user.getRole())
+//                .parallelStream()
+//                .map(handler -> Collections.singletonList(new InlineKeyboardButton()
+//                        .setText(answerService.get(handler.getType(), user.getLanguage()).getLabel())
+//                        .setCallbackData(answerService.get(handler.getType(), user.getLanguage()).getType())))
+//                .collect(Collectors.toList()));
+
+        List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
+        List<Handler> handlers = getAvailableHandlerForUser(user.getRole());
+
+        for (int i = 0; i < handlers.size() ; i += MAX_HANDLER_IN_ROW) {
+            List<InlineKeyboardButton> row = new LinkedList<>();
+
+            if(i + MAX_HANDLER_IN_ROW > handlers.size()){
+                for (int j = i; j < handlers.size(); j++) {
+                    row.add(
+                            new InlineKeyboardButton()
+                                    .setText(answerService.get(handlers.get(j).getType(),
+                                            user.getLanguage()).getLabel())
+                                    .setCallbackData(answerService.get(handlers.get(j).getType(),
+                                            user.getLanguage()).getType()));
+                }
+            } else {
+                for (int j = i; j < i + MAX_HANDLER_IN_ROW; j++) {
+                    row.add(
+                            new InlineKeyboardButton()
+                                    .setText(answerService.get(handlers.get(j).getType(),
+                                            user.getLanguage()).getLabel())
+                                    .setCallbackData(answerService.get(handlers.get(j).getType(),
+                                            user.getLanguage()).getType()));
+                }
+
+            }
+
+            buttons.add(row);
+        }
+
+        return new InlineKeyboardMarkup().setKeyboard(buttons);
     }
 
     public TelegramResponse getMessage(User user, Update update) {
@@ -60,7 +94,7 @@ public abstract class Handler {
             editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
             editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
 
-            return new TelegramResponse(editMessageText);
+            return new TelegramResponse(editMessageText,update);
         }
 
         SendMessage sendMessage = new SendMessage();
@@ -73,11 +107,10 @@ public abstract class Handler {
     }
 
     public TelegramResponse handle(User user, Update update){
-        return transaction(update);
+        return transaction(user,update);
     }
 
-    public TelegramResponse transaction(Update update){
-        User user = userService.get(UpdateUtil.getChatId(update));
+    public TelegramResponse transaction(User user, Update update){
 
         if (update.hasCallbackQuery()) {
             for (Handler handler : getAvailableHandlerForUser(user.getRole())) {

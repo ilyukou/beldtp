@@ -44,7 +44,7 @@ public class ProfileHandler extends Handler {
             message.setChatId(user.getId());
             message.setText(builder.toString());
             message.setReplyMarkup(getInlineKeyboardMarkup(user));
-            return new TelegramResponse(message);
+            return new TelegramResponse(message,update);
         }
 
         SendMessage message = new SendMessage();

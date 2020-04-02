@@ -102,6 +102,10 @@ public class Incident {
         return media != null && media.size() > 0;
     }
 
+    public void add(Media media){
+        this.media.add(media);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if ((obj == null) || (obj.getClass() != this.getClass())) {

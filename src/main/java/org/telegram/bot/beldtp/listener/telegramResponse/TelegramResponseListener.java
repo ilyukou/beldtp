@@ -19,7 +19,7 @@ public class TelegramResponseListener {
     @Autowired
     private BeldtpBot bot;
 
-    @Scheduled(fixedRate = 5)
+    @Scheduled(fixedRate = 1)
     private void executeTelegramResponse() {
 
         while (telegramResponseBlockingQueue.size() > 0) {

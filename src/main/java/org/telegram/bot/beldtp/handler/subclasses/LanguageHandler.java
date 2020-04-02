@@ -56,7 +56,7 @@ public class LanguageHandler extends Handler {
             editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
             editMessageText.setReplyMarkup(markupInline);
 
-            return new TelegramResponse(editMessageText);
+            return new TelegramResponse(editMessageText,update);
         } else {
             SendMessage sendMessage = new SendMessage();
 

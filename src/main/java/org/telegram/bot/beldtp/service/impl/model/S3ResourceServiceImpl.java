@@ -55,6 +55,9 @@ public class S3ResourceServiceImpl implements ResourcesService {
 
     @Override
     public byte[] get(Resource resource) {
+        if(resource == null){
+            return null;
+        }
         GetObjectRequest rangeObjectRequest = new GetObjectRequest(bucketName, resource.getFileName());
 
         try {

@@ -42,6 +42,9 @@ public class MainHandler extends Handler {
     @Autowired
     private ProfileHandler profileHandler;
 
+    @Autowired
+    private ApiHandler apiHandler;
+
     @Override
     public TelegramResponse getMessage(User user, Update update) {
         return super.getMessage(user, update);
@@ -49,13 +52,13 @@ public class MainHandler extends Handler {
 
     @Override
     public TelegramResponse handle(User user, Update update) {
-        return transaction(update);
+        return transaction(user,update);
     }
 
     @Override
     public List<Handler> getChild() {
         return Arrays.asList(addHandler, helpHandler, settingHandler,
-                aboutHandler, profileHandler,
+                aboutHandler, profileHandler, apiHandler,
                 queueHandler, configurationHandler);
     }
 }

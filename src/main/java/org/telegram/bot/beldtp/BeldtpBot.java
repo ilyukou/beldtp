@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.bot.beldtp.handler.ExceptionHandler;
 import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -23,6 +25,9 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Autowired
     private StartHandler startHandler;
+
+    @Autowired
+    private ExceptionHandler exceptionHandler;
 
     @Autowired
     private UserService userService;
@@ -48,14 +53,20 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
         User user = userService.get(UpdateUtil.getChatId(update));
 
+        TelegramResponse response;
+
         if(user == null){
-            executeTelegramResponse(startHandler.getMessage(null, update));
+            response = startHandler.getMessage(null, update);
         } else {
-            executeTelegramResponse(
-                    startHandler
+            response = startHandler
                         .getHandlerByStatus(user.peekStatus())
-                        .handle(user,update)
-            );
+                        .handle(user,update);
+        }
+
+        if(response == null){
+            executeTelegramResponse(exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)),update));
+        } else {
+            executeTelegramResponse(response);
         }
     }
 
@@ -74,6 +85,14 @@ public class BeldtpBot extends TelegramLongPollingBot {
                 execute(telegramResponse.getAnswerCallbackQuery());
 
             } else if (telegramResponse.hasEditMessageText()) {
+
+                try {
+                    execute(
+                            new AnswerCallbackQuery()
+                                    .setCallbackQueryId(telegramResponse.getUpdate().getCallbackQuery().getId()));
+                } catch (Exception e) {
+                    // ignore
+                }
                 execute(telegramResponse.getEditMessageText());
 
             } else if (telegramResponse.hasDeleteMessage()) {

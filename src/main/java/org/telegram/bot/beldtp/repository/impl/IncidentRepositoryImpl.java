@@ -5,12 +5,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.telegram.bot.beldtp.model.Incident;
-import org.telegram.bot.beldtp.model.IncidentType;
-import org.telegram.bot.beldtp.model.User;
+import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.repository.interf.IncidentRepository;
 import org.telegram.bot.beldtp.repository.jpa.IncidentJpaRepository;
+import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
+import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 @Repository
@@ -20,6 +29,12 @@ public class IncidentRepositoryImpl implements IncidentRepository {
 
     @Autowired
     private IncidentJpaRepository incidentJpaRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ResourcesService resourcesService;
 
     @Override
     public List<Incident> get(User user, IncidentType incidentType) {
@@ -67,7 +82,7 @@ public class IncidentRepositoryImpl implements IncidentRepository {
                 .findByUserAndType(user, IncidentType.DRAFT);
 
         if(drafts == null || drafts.size() == 0) {
-            return null;
+            return createDraft(user);
         }
 
         if(drafts.size() == 1){
@@ -76,5 +91,22 @@ public class IncidentRepositoryImpl implements IncidentRepository {
 
         LOGGER.warn("Found more than one draft for user. user id : " + user.getId());
         return drafts.get(0);
+    }
+
+    @Override
+    public long size(IncidentType incidentType) {
+        return get(incidentType).size();
+    }
+
+    private Incident createDraft(User user) {
+        Incident incident = new Incident();
+        incident.setType(IncidentType.DRAFT);
+        incident.setUser(user);
+
+        incident = save(incident);
+        user.add(incident);
+        user = userService.save(user);
+
+        return incident;
     }
 }

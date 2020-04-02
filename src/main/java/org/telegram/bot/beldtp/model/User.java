@@ -61,6 +61,10 @@ public class User {
         this.incident.add(incident);
     }
 
+    public void remove(Incident incdt) {
+        this.incident.removeIf(incident -> incdt.getId().equals(incident.getId()));
+    }
+
     public String peekStatus() {
         return status.peek();
     }

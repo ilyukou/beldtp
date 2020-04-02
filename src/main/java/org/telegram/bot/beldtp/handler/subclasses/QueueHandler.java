@@ -7,10 +7,6 @@ import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-@HandlerInfo(type = "queue", accessRight = UserRole.USER)
+@HandlerInfo(type = "queue", accessRight = UserRole.MODERATOR)
 public class QueueHandler extends Handler {
-    @Override
-    public TelegramResponse handle(User user, Update update) {
-        return null;
-    }
 }

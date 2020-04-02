@@ -23,5 +23,7 @@ public interface IncidentService {
 
     List<Incident> get(IncidentType type);
 
-    SendMediaGroup getSendMediaGroup(Incident incident, String url);
+    SendMediaGroup getSendMediaGroup(Incident incident);
+
+    long size(IncidentType reject);
 }
