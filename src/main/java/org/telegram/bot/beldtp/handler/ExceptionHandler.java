@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.handler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
@@ -23,27 +24,32 @@ public class ExceptionHandler extends Handler {
     @Autowired
     private AnswerService answerService;
 
+    @Autowired
+    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
+
     @Override
     public TelegramResponse getMessage(User user, Update update) {
-        if(user == null || user.getId() == null){
+        if (user == null || user.getId() == null) {
             return new TelegramResponse(new SendMessage()
                     .setText("Critical error")
                     .setChatId(Objects.requireNonNull(UpdateUtil.getChatId(update))));
         }
 
-        if(user.peekStatus().equals(getType())){
+        if (user.peekStatus().equals(getType())) {
             user.popStatus();
-            userService.save(user);
+            user = userService.save(user);
         }
 
-        if(user.getLanguage() == null){
+        if (user.getLanguage() == null) {
             user.setLanguage(Language.BE);
-            userService.save(user);
+            user = userService.save(user);
         }
 
-        return new TelegramResponse(new SendMessage()
+        telegramResponseBlockingQueue.push(new TelegramResponse(new SendMessage()
                 .setChatId(user.getId())
-                .setText(getAnswer(user.getLanguage()).getText()));
+                .setText(getAnswer(user.getLanguage()).getText())));
+
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     @Override

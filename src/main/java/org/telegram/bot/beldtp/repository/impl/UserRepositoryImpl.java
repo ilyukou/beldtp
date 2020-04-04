@@ -1,6 +1,5 @@
 package org.telegram.bot.beldtp.repository.impl;
 
-import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.telegram.bot.beldtp.model.Language;
@@ -70,5 +69,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public long size(Language language) {
         return userJpaRepository.findByLanguage(language).size();
+    }
+
+    @Override
+    public User get(String username) {
+        return userJpaRepository.findByUsername(username);
     }
 }

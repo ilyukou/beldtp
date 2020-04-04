@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.bot.beldtp.handler.ExceptionHandler;
 import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
+import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
@@ -28,6 +29,9 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Autowired
     private ExceptionHandler exceptionHandler;
+
+    @Autowired
+    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Autowired
     private UserService userService;
@@ -55,19 +59,23 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
         TelegramResponse response;
 
-        if(user == null){
-            response = startHandler.getMessage(null, update);
-        } else {
-            response = startHandler
+        try {
+            if (user == null) {
+                response = startHandler.getMessage(null, update);
+            } else {
+                response = startHandler
                         .getHandlerByStatus(user.peekStatus())
-                        .handle(user,update);
+                        .handle(user, update);
+            }
+        } catch (Exception e) { // any Exception throw from Handlers
+            response = exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)), update);
         }
 
-        if(response == null){
-            executeTelegramResponse(exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)),update));
-        } else {
-            executeTelegramResponse(response);
+        if (response == null) {
+            response = exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)), update);
         }
+
+        telegramResponseBlockingQueue.push(response);
     }
 
     @PostConstruct

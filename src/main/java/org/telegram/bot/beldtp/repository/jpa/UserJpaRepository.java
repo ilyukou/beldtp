@@ -12,4 +12,6 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
     List<User> findByRole(UserRole userRole);
 
     List<User> findByLanguage(Language language);
+
+    User findByUsername(String username);
 }

@@ -71,10 +71,6 @@ public class S3ResourceServiceImpl implements ResourcesService {
     @Override
     public Resource save(byte[] bytes, Resource resource)  {
 
-        if(!resourceRepository.isExist(resource)){
-            resource = resourceRepository.save(resource);
-        }
-
         InputStream inputStream = new ByteArrayInputStream(bytes);
 
         amazonS3.putObject(bucketName, resource.getFileName(), inputStream, null);

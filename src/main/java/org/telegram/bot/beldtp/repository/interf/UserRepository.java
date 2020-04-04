@@ -29,4 +29,6 @@ public interface UserRepository {
     long size();
 
     long size(Language language);
+
+    User get(String username);
 }

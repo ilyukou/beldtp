@@ -13,6 +13,8 @@ import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Arrays;
@@ -54,11 +56,36 @@ public class AddLocationHandler extends Handler {
     private LocationRepository locationRepository;
 
     @Override
+    public TelegramResponse getMessage(User user, Update update) {
+        Incident draft = incidentService.getDraft(user);
+
+        if (draft != null && draft.getLocation() != null) {
+            TelegramResponse response = super.getMessage(user, update);
+
+            if (response.hasEditMessageText()) {
+                EditMessageText message = response.getEditMessageText();
+                message.setText(getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation());
+                return new TelegramResponse(message, update);
+            }
+
+            if (response.hasSendMessage()) {
+                SendMessage message = response.getSendMessage();
+                message.setText(getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation());
+                return new TelegramResponse(message);
+            }
+
+            return response;
+        }
+
+        return super.getMessage(user, update);
+    }
+
+    @Override
     public TelegramResponse handle(User user, Update update) {
 
-        TelegramResponse transaction = transaction(user,update);
+        TelegramResponse transaction = transaction(user, update);
 
-        if(transaction != null){
+        if (transaction != null) {
             return transaction;
         }
 
@@ -75,16 +102,10 @@ public class AddLocationHandler extends Handler {
 
             draft.setLocation(location);
 
-            if(user.peekStatus().equals(getType())){
-                user.popStatus();
-            }
-
-            user.pushStatus(confirmAddHandler.getType());
-
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+            return super.getMessage(user, update);
         }
 
         return getMessageWhenMediaHasNotText(user.getLanguage(),update);
@@ -100,6 +121,6 @@ public class AddLocationHandler extends Handler {
 
     @Override
     public List<Handler> getChild() {
-        return Arrays.asList(backHandler,backAndRejectIncidentHandler);
+        return Arrays.asList(backHandler);
     }
 }

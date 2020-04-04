@@ -39,9 +39,6 @@ public class AddTextHandler extends Handler {
     @Autowired
     private AnswerService answerService;
 
-    @Autowired
-    private AddLocationHandler addLocationHandler;
-
     @Override
     public TelegramResponse handle(User user, Update update) {
 
@@ -56,11 +53,9 @@ public class AddTextHandler extends Handler {
 
             draft.setText(update.getMessage().getText());
 
-            if(user.peekStatus().equals(getType())){
-                user.popStatus();
-            }
-
-            user.pushStatus(addLocationHandler.getType());
+//            if(user.peekStatus().equals(getType())){
+//                user.popStatus();
+//            }
 
             draft = incidentService.save(draft);
             user = userService.save(user);
@@ -81,37 +76,6 @@ public class AddTextHandler extends Handler {
 
     @Override
     public List<Handler> getChild() {
-        return Arrays.asList(backHandler,backAndRejectIncidentHandler);
-    }
-
-    @Override
-    public TelegramResponse transaction(User user, Update update) {
-        if(update.hasCallbackQuery()){
-            String callback = update.getCallbackQuery().getData();
-
-            if(callback.equals(addLocationHandler.getType())){
-
-                Incident draft = incidentService.getDraft(user);
-
-                if (draft.getText() != null && draft.getText().length() > 0){
-                    user.pushStatus(addLocationHandler.getType());
-
-                    user = userService.save(user);
-
-                    return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
-                } else {
-                    return new TelegramResponse(
-                            new AnswerCallbackQuery()
-                                    .setText("Required description")
-                                    .setCallbackQueryId(update.getCallbackQuery().getId())
-                    );
-
-                }
-            } else {
-                return super.transaction(user, update);
-            }
-        }
-
-        return null;
+        return Arrays.asList(backHandler);
     }
 }

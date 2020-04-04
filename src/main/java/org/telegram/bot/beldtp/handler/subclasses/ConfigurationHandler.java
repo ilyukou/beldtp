@@ -5,6 +5,7 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.configuration.PrivateStatisticsHandler;
 import org.telegram.bot.beldtp.handler.subclasses.configuration.PublicStatisticsHandler;
+import org.telegram.bot.beldtp.handler.subclasses.configuration.UserProfileHandler;
 import org.telegram.bot.beldtp.model.UserRole;
 
 import java.util.Arrays;
@@ -20,10 +21,13 @@ public class ConfigurationHandler extends Handler {
     private PublicStatisticsHandler publicStatisticsHandler;
 
     @Autowired
+    private UserProfileHandler userProfileHandler;
+
+    @Autowired
     private BackHandler backHandler;
 
     @Override
     public List<Handler> getChild() {
-        return Arrays.asList(publicStatisticsHandler,privateStatisticsHandler,backHandler);
+        return Arrays.asList(publicStatisticsHandler, privateStatisticsHandler, userProfileHandler, backHandler);
     }
 }

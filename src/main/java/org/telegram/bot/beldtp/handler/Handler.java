@@ -6,7 +6,6 @@ import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public abstract class Handler {
 
-    private static final int MAX_HANDLER_IN_ROW = 2;
+    private static final int MAX_HANDLER_IN_ROW = 1;
 
     @Autowired
     private AnswerService answerService;

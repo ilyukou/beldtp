@@ -6,7 +6,6 @@ import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.repository.interf.UserRepository;
-import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 
 import java.util.List;
@@ -55,5 +54,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public long size(Language language) {
         return userRepository.size(language);
+    }
+
+    @Override
+    public User get(String username) {
+        return userRepository.get(username);
     }
 }
