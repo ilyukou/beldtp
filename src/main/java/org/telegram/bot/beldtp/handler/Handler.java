@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 @Component
 public abstract class Handler {
 
-    private static final int MAX_HANDLER_IN_ROW = 1;
-
     @Autowired
     private AnswerService answerService;
 
@@ -36,6 +34,7 @@ public abstract class Handler {
 
     private UserRole accessRight;
     private String type;
+    private byte maxHandlerInRow;
 
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user){
 //        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
@@ -49,10 +48,10 @@ public abstract class Handler {
         List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
         List<Handler> handlers = getAvailableHandlerForUser(user.getRole());
 
-        for (int i = 0; i < handlers.size() ; i += MAX_HANDLER_IN_ROW) {
+        for (int i = 0; i < handlers.size() ; i += getMaxHandlerInRow()) {
             List<InlineKeyboardButton> row = new LinkedList<>();
 
-            if(i + MAX_HANDLER_IN_ROW > handlers.size()){
+            if(i + getMaxHandlerInRow() > handlers.size()){
                 for (int j = i; j < handlers.size(); j++) {
                     row.add(
                             new InlineKeyboardButton()
@@ -62,7 +61,7 @@ public abstract class Handler {
                                             user.getLanguage()).getType()));
                 }
             } else {
-                for (int j = i; j < i + MAX_HANDLER_IN_ROW; j++) {
+                for (int j = i; j < i + getMaxHandlerInRow(); j++) {
                     row.add(
                             new InlineKeyboardButton()
                                     .setText(answerService.get(handlers.get(j).getType(),
@@ -160,5 +159,13 @@ public abstract class Handler {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public byte getMaxHandlerInRow() {
+        return maxHandlerInRow;
+    }
+
+    public void setMaxHandlerInRow(byte maxHandlerInRow) {
+        this.maxHandlerInRow = maxHandlerInRow;
     }
 }

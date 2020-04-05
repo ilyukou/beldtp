@@ -12,7 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.Arrays;
 import java.util.List;
 
-@HandlerInfo(type = "main", accessRight = UserRole.USER)
+@HandlerInfo(type = "main", accessRight = UserRole.USER, maxHandlerInRow = 2)
 public class MainHandler extends Handler {
 
     @Autowired

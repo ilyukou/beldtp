@@ -38,4 +38,11 @@ public @interface HandlerInfo {
      * User have access for handle his message in {@link org.telegram.bot.beldtp.handler.Handler}
      */
     UserRole accessRight();
+
+    /**
+     * Required a count of handler in row. Range of accountable start from 1 to 5.
+     * If value more than or less than 1-5 {@link HandlerInfoBeanPostProcessor} set 1
+     * @return count of button in a row
+     */
+    byte maxHandlerInRow() default 1;
 }

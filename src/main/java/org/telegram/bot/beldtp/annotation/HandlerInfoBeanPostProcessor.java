@@ -45,6 +45,12 @@ public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
             throw new IllegalArgumentException(e);
         }
 
+        if(mapper.maxHandlerInRow() < 1 || mapper.maxHandlerInRow() > 5){
+            handler.setMaxHandlerInRow((byte) 1);
+        }else {
+            handler.setMaxHandlerInRow(mapper.maxHandlerInRow());
+        }
+
         handler.setType(mapper.type());
         handler.setAccessRight(mapper.accessRight());
 
