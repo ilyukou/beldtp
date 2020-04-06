@@ -9,6 +9,7 @@ import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @HandlerInfo(type = "backAndRejectIncident", accessRight = UserRole.USER)
@@ -21,19 +22,22 @@ public class BackAndRejectIncidentHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private BackHandler backHandler;
-
-    @Autowired
     private MainHandler mainHandler;
+
+    @Override
+    public String getLabel(User user, Update update) {
+        return EmojiUtil.CROSS_MARK + " " + getAnswer(user.getLanguage()).getLabel();
+    }
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
 
-        while (!user.peekStatus().equals(mainHandler.getType())){
+        while (!user.peekStatus().equals(mainHandler.getType())) {
             user.popStatus();
         }
+
         user.remove(draft);
         user = userService.save(user);
 

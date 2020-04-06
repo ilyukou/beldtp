@@ -7,12 +7,11 @@ import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockin
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Calendar;
 
-@HandlerInfo(type = "addTimeNow", accessRight = UserRole.USER)
+@HandlerInfo(type = "timeNow", accessRight = UserRole.USER)
 public class TimeNowHandler extends Handler {
 
     @Autowired
@@ -39,18 +38,14 @@ public class TimeNowHandler extends Handler {
         time.setHour((byte) calendar.get(Calendar.HOUR_OF_DAY));
         time.setMinute((byte) calendar.get(Calendar.MINUTE));
 
-        user.popStatus(); // remove this
+        if (user.peekStatus().equals(getType())) {
+            user.popStatus();
+        }
+
         user = userService.save(user);
 
         incident.setTime(time);
         incident = incidentService.save(incident);
-
-        if(update.hasCallbackQuery()){
-            telegramResponseBlockingQueue.push(
-                    new TelegramResponse(new AnswerCallbackQuery()
-                            .setCallbackQueryId(update.getCallbackQuery().getId()))
-            );
-        }
 
         return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }

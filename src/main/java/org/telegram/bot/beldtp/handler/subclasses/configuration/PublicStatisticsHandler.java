@@ -13,12 +13,15 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.stream.Collectors;
 
 @HandlerInfo(type = "publicStatistics", accessRight = UserRole.ADMIN)
 public class PublicStatisticsHandler extends Handler {
+
+    private static final String COUNT_OF_USER = "countOfUser";
+    private static final String WHAT_LANGUAGE_ARE_USED = "whatLanguageAreUsed";
+    private static final String COUNT_OF_INCIDENT = "countOfIncident";
+
     @Autowired
     private UserService userService;
 
@@ -26,19 +29,22 @@ public class PublicStatisticsHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
+    private AnswerService answerService;
+
+    @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {
 
-        if(update.hasCallbackQuery()){
+        if (update.hasCallbackQuery()) {
             EditMessageText editMessageText = new EditMessageText();
 
             editMessageText.setChatId(user.getId());
 
             editMessageText.setText(getStatistics(user.getLanguage(), Calendar.getInstance()));
 
-            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user));
+            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
 
             editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
             editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
@@ -54,7 +60,7 @@ public class PublicStatisticsHandler extends Handler {
                 new SendMessage()
                         .setText(getStatistics(user.getLanguage(), Calendar.getInstance()))
                         .setChatId(user.getId())
-                        .setReplyMarkup(getInlineKeyboardMarkup(user)));
+                        .setReplyMarkup(getInlineKeyboardMarkup(user, update)));
     }
 
     private String getStatistics(Language language, Calendar calendarInstance){
@@ -73,15 +79,16 @@ public class PublicStatisticsHandler extends Handler {
         }
 
         StringBuilder stringBuilder = new StringBuilder()
-                .append("Statistics").append("\n")
+                .append(getAnswer(language).getText()).append("\n")
                 .append("\n")
-                .append("Count of users ").append(userService.size()).append("\n")
+                .append(answerService.get(COUNT_OF_USER, language)).append(" ").append(userService.size()).append("\n")
                 .append("\n")
-                .append("What languages are used :").append("\n")
+                .append(answerService.get(WHAT_LANGUAGE_ARE_USED, language)).append("\n")
                 .append("\n")
                 .append(languageStat.toString())
                 .append("\n")
-                .append("Count of incidents ").append(incidentService.size(IncidentType.PUBLISH)).append("\n")
+                .append(answerService.get(COUNT_OF_INCIDENT, language)).append(" ")
+                .append(incidentService.size(IncidentType.PUBLISH)).append("\n")
                 .append("\n")
 //                .append("Count of message from user to bot : ").append(.count()).append("\n") FIXME - add function
                 .append("\n")

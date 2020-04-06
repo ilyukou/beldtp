@@ -11,6 +11,7 @@ import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -18,6 +19,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class ConfirmAddHandler extends Handler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfirmAddHandler.class);
+
+    private static final String REQUIRED_MIN_ONE_MEDIA = "requiredMinOneMedia";
+    private static final String REQUIRED_TEXT = "requiredText";
+    private static final String REQUIRED_LOCATION = "requiredLocation";
+    private static final String REQUIRED_TIME = "requiredTime";
+    private static final String YOU_INCIDENT_BUILD = "youIncidentBuild";
 
     private static final String PHOTO_EMOJI = "\uD83D\uDDBC";
 
@@ -39,6 +46,11 @@ public class ConfirmAddHandler extends Handler {
     private MainHandler mainHandler;
 
     @Override
+    public String getLabel(User user, Update update) {
+        return EmojiUtil.CHECK_MARK + " " + getAnswer(user.getLanguage()).getLabel();
+    }
+
+    @Override
     public TelegramResponse getMessage(User user, Update update) {
         return handle(user, update);
     }
@@ -57,17 +69,20 @@ public class ConfirmAddHandler extends Handler {
         }
 
         if (draft.getMedia() == null || draft.getMedia().size() == 0) {
-            return getAnswerCallbackQuery("Required min a media", user, update);
+            return getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_MIN_ONE_MEDIA, user.getLanguage()).getText(), user, update);
         }
 
         if (draft.getText() == null || draft.getText().length() == 0) {
-            return getAnswerCallbackQuery("Required text", user, update);
+            return getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_TEXT, user.getLanguage()).getText(), user, update);
         }
 
         if (draft.getLocation() == null
                 || draft.getLocation().getLongitude() == null
                 || draft.getLocation().getLatitude() == null) {
-            return getAnswerCallbackQuery("Required text", user, update);
+            return getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_LOCATION, user.getLanguage()).getText(), user, update);
         }
 
         if (draft.getTime() == null
@@ -76,7 +91,8 @@ public class ConfirmAddHandler extends Handler {
                 || draft.getTime().getDay() == null
                 || draft.getTime().getHour() == null
                 || draft.getTime().getMinute() == null) {
-            return getAnswerCallbackQuery("Required time", user, update);
+            return getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_TIME, user.getLanguage()).getText(), user, update);
         }
 
         draft.setType(IncidentType.BUILD);
@@ -87,7 +103,8 @@ public class ConfirmAddHandler extends Handler {
         }
 
         user = userService.save(user);
-        telegramResponseBlockingQueue.push(getAnswerCallbackQuery("You incident build", user, update));
+        telegramResponseBlockingQueue.push(getAnswerCallbackQuery(answerService
+                .get(YOU_INCIDENT_BUILD, user.getLanguage()).getText(), user, update));
 
         return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }

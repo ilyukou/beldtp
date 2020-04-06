@@ -7,9 +7,13 @@ import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeNowHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeSelectHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeTodayHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeYesterdayHandler;
-import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.model.Incident;
+import org.telegram.bot.beldtp.model.TelegramResponse;
+import org.telegram.bot.beldtp.model.User;
+import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Arrays;
@@ -34,6 +38,17 @@ public class AddTimeHandler extends Handler {
 
     @Autowired
     private TimeYesterdayHandler timeYesterdayHandler;
+
+    @Override
+    public String getLabel(User user, Update update) {
+        Incident draft = incidentService.getDraft(user);
+
+        if (draft.getTime() != null) {
+            return EmojiUtil.CHECK_MARK_BUTTON + " " + getAnswer(user.getLanguage()).getLabel();
+        }
+
+        return EmojiUtil.WHITE_LARGE_SQUARE + " " + getAnswer(user.getLanguage()).getLabel();
+    }
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {

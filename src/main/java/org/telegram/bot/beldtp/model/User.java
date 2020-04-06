@@ -57,6 +57,14 @@ public class User {
         }
     }
 
+    public User update(org.telegram.telegrambots.meta.api.objects.User user) {
+        this.username = user.getUserName();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+
+        return this;
+    }
+
     public void add(Incident incident) {
         this.incident.add(incident);
     }

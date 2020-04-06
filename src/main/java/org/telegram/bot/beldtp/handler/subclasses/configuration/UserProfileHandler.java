@@ -2,11 +2,13 @@ package org.telegram.bot.beldtp.handler.subclasses.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -21,8 +23,14 @@ import java.util.List;
 @HandlerInfo(type = "userProfile", accessRight = UserRole.ADMIN)
 public class UserProfileHandler extends Handler {
 
-    @Autowired
+    private static final String NOT_FOUND_USER_WITH_SUCH_USERNAME = "notFoundUserWithSuchUsername";
+    private static final String INCIDENT_SIZE = "incidentSize";
+    private static final String SET = "set";
+
     private UserService userService;
+
+    @Autowired
+    private AnswerService answerService;
 
     @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
@@ -52,7 +60,7 @@ public class UserProfileHandler extends Handler {
                 return getMessageWhenUserFound(update, user, foundUser);
             }
         } else {
-            return getTelegramResponseWhenMessageNotHasText(update, user);
+            throw new BadRequestException();
         }
     }
 
@@ -79,20 +87,10 @@ public class UserProfileHandler extends Handler {
         return response;
     }
 
-    private TelegramResponse getTelegramResponseWhenMessageNotHasText(Update update, User user) {
-
-        SendMessage message = new SendMessage();
-        message.setText("Message has not text");
-        message.setChatId(user.getId());
-
-        telegramResponseBlockingQueue.push(new TelegramResponse(message));
-
-        return super.getMessage(user, update);
-    }
-
     private TelegramResponse getTelegramResponseWhenUserNotExist(Update update, User user) {
         SendMessage message = new SendMessage();
-        message.setText("User with such username has not exist. @" + update.getMessage().getText());
+        message.setText(answerService
+                .get(NOT_FOUND_USER_WITH_SUCH_USERNAME, user.getLanguage()) + update.getMessage().getText());
         message.setChatId(user.getId());
 
         telegramResponseBlockingQueue.push(new TelegramResponse(message));
@@ -124,7 +122,8 @@ public class UserProfileHandler extends Handler {
         }
 
         if (user.getIncident() != null) {
-            builder.append("Incident size ").append(user.getIncident().size());
+            builder.append(answerService.get(INCIDENT_SIZE, user.getLanguage()))
+                    .append(user.getIncident().size());
         }
 
         return builder.toString();
@@ -141,7 +140,7 @@ public class UserProfileHandler extends Handler {
             }
 
             buttons.add(Arrays.asList(new InlineKeyboardButton()
-                    .setText("Set " + userRole.name().toLowerCase())
+                    .setText(answerService.get(SET, user.getLanguage()) + " " + userRole.name().toLowerCase())
                     .setCallbackData(userRole.name() + "-" + foundUser.getId())));
         }
 

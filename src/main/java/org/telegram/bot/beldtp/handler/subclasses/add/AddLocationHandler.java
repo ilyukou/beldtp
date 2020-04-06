@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.handler.subclasses.add;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackAndRejectIncidentHandler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
@@ -12,9 +13,7 @@ import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Arrays;
@@ -22,8 +21,6 @@ import java.util.List;
 
 @HandlerInfo(type = "addLocation", accessRight = UserRole.USER)
 public class AddLocationHandler extends Handler {
-
-    private static final String REQUIRED_LOCATION = "requiredLocation";
 
     @Autowired
     private UserService userService;
@@ -56,28 +53,25 @@ public class AddLocationHandler extends Handler {
     private LocationRepository locationRepository;
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public String getText(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
-        if (draft != null && draft.getLocation() != null) {
-            TelegramResponse response = super.getMessage(user, update);
-
-            if (response.hasEditMessageText()) {
-                EditMessageText message = response.getEditMessageText();
-                message.setText(getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation());
-                return new TelegramResponse(message, update);
-            }
-
-            if (response.hasSendMessage()) {
-                SendMessage message = response.getSendMessage();
-                message.setText(getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation());
-                return new TelegramResponse(message);
-            }
-
-            return response;
+        if (draft.getLocation() != null) {
+            return getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation();
         }
 
-        return super.getMessage(user, update);
+        return getAnswer(user.getLanguage()).getText();
+    }
+
+    @Override
+    public String getLabel(User user, Update update) {
+        Incident draft = incidentService.getDraft(user);
+
+        if (draft.getLocation() != null) {
+            return EmojiUtil.CHECK_MARK_BUTTON + " " + getAnswer(user.getLanguage()).getLabel();
+        }
+
+        return EmojiUtil.WHITE_LARGE_SQUARE + " " + getAnswer(user.getLanguage()).getLabel();
     }
 
     @Override
@@ -105,18 +99,10 @@ public class AddLocationHandler extends Handler {
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return super.getMessage(user, update);
+            return getMessage(user, update);
         }
 
-        return getMessageWhenMediaHasNotText(user.getLanguage(),update);
-    }
-
-    private TelegramResponse getMessageWhenMediaHasNotText(Language language, Update update) {
-        return new TelegramResponse(
-                new AnswerCallbackQuery()
-                        .setText(answerService.get(REQUIRED_LOCATION,language).getText())
-                        .setCallbackQueryId(update.getCallbackQuery().getId())
-        );
+        throw new BadRequestException();
     }
 
     @Override

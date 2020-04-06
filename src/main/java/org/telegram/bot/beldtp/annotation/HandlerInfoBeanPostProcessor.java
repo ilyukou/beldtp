@@ -36,7 +36,7 @@ public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
 
         Handler handler = (Handler) bean;
 
-        if(handlerMap.isExist(handler.getType())){
+        if (handlerMap.isExist(handler.getType())) {
             String e = Handler.class.getName() + " with such type are exist. " +
                     "Type: " + handler.getType() + " . Class with such key is "
                     + handlerMap.get(handler.getType()).getClass().getName();
@@ -45,10 +45,10 @@ public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
             throw new IllegalArgumentException(e);
         }
 
-        if(mapper.maxHandlerInRow() < 1 || mapper.maxHandlerInRow() > 5){
-            handler.setMaxHandlerInRow((byte) 1);
-        }else {
-            handler.setMaxHandlerInRow(mapper.maxHandlerInRow());
+        if (mapper.maxButtonInRow() < 1 || mapper.maxButtonInRow() > 5) {
+            handler.setMaxButtonInRow((byte) 1);
+        } else {
+            handler.setMaxButtonInRow(mapper.maxButtonInRow());
         }
 
         handler.setType(mapper.type());

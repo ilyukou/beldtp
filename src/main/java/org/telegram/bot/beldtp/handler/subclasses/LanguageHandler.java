@@ -2,20 +2,21 @@ package org.telegram.bot.beldtp.handler.subclasses;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
-import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.model.Language;
+import org.telegram.bot.beldtp.model.TelegramResponse;
+import org.telegram.bot.beldtp.model.User;
+import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.bot.beldtp.util.UpdateUtil;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @HandlerInfo(type = "language", accessRight = UserRole.USER)
@@ -31,43 +32,20 @@ public class LanguageHandler extends Handler {
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Language[] languages = Language.values();
 
-        if(user.getLanguage() == null){
+        if (user.getLanguage() == null) {
             user.setLanguage(Language.BE);
         }
 
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-
-        markupInline
-                .setKeyboard(Arrays.stream(languages)
-                        .map(language -> Arrays.asList(new InlineKeyboardButton()
+        return new InlineKeyboardMarkup().setKeyboard(Arrays.stream(languages)
+                .map(language -> Collections.singletonList(new InlineKeyboardButton()
                         .setCallbackData(language.toString())
                         .setText(language.getValue())))
-                        .collect(Collectors.toList()));
-
-        if (update.hasCallbackQuery()) {
-            EditMessageText editMessageText = new EditMessageText();
-
-            editMessageText.setChatId(user.getId());
-            editMessageText.setText(answerService.get(getType(), user.getLanguage()).getText());
-            editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
-            editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
-            editMessageText.setReplyMarkup(markupInline);
-
-            return new TelegramResponse(editMessageText,update);
-        } else {
-            SendMessage sendMessage = new SendMessage();
-
-            sendMessage.setChatId(user.getId());
-            sendMessage.setText(answerService.get(getType(), Language.BE).getText());
-
-            sendMessage.setReplyMarkup(markupInline);
-
-            return new TelegramResponse(sendMessage);
-        }
+                .collect(Collectors.toList()));
     }
+
 
     @Override
     public TelegramResponse handle(User user, Update update) {
@@ -81,20 +59,15 @@ public class LanguageHandler extends Handler {
             }
         }
 
-        if(user.peekStatus().equals(getType())){
+        if (user.getLanguage() == null) {
+            throw new BadRequestException();
+        }
+
+        if (user.peekStatus().equals(getType())) {
             user.popStatus();
         }
 
         user = userService.save(user);
-
-        Answer languageSuccess = answerService.get(getType()+"Success", user.getLanguage());
-
-        telegramResponseBlockingQueue.push(
-                new TelegramResponse(
-                        new AnswerCallbackQuery()
-                                .setText(languageSuccess.getText())
-                                .setCallbackQueryId(update.getCallbackQuery().getId())
-                ));
 
         return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }

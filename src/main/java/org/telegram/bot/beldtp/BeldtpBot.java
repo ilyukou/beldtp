@@ -5,13 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.bot.beldtp.handler.ExceptionHandler;
-import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
+import org.telegram.bot.beldtp.handler.UpdateHandler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
-import org.telegram.bot.beldtp.model.User;
-import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -25,22 +21,17 @@ public class BeldtpBot extends TelegramLongPollingBot {
     private static final Logger LOGGER = LoggerFactory.getLogger(BeldtpBot.class);
 
     @Autowired
-    private StartHandler startHandler;
-
-    @Autowired
-    private ExceptionHandler exceptionHandler;
-
-    @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
-    @Autowired
-    private UserService userService;
 
     @Value("${bot.token}")
     private String token;
 
     @Value("${bot.username}")
     private String username;
+
+    @Autowired
+    private UpdateHandler updateHandler;
 
     @Override
     public String getBotToken() {
@@ -54,28 +45,7 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
-        User user = userService.get(UpdateUtil.getChatId(update));
-
-        TelegramResponse response;
-
-        try {
-            if (user == null) {
-                response = startHandler.getMessage(null, update);
-            } else {
-                response = startHandler
-                        .getHandlerByStatus(user.peekStatus())
-                        .handle(user, update);
-            }
-        } catch (Exception e) { // any Exception throw from Handlers
-            response = exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)), update);
-        }
-
-        if (response == null) {
-            response = exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)), update);
-        }
-
-        telegramResponseBlockingQueue.push(response);
+        telegramResponseBlockingQueue.push(updateHandler.handle(update));
     }
 
     @PostConstruct

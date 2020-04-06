@@ -42,7 +42,8 @@ public @interface HandlerInfo {
     /**
      * Required a count of handler in row. Range of accountable start from 1 to 5.
      * If value more than or less than 1-5 {@link HandlerInfoBeanPostProcessor} set 1
+     *
      * @return count of button in a row
      */
-    byte maxHandlerInRow() default 1;
+    byte maxButtonInRow() default 1;
 }

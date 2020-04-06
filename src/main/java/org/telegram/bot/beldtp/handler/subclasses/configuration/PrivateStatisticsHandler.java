@@ -5,6 +5,7 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -16,6 +17,15 @@ import java.util.Calendar;
 
 @HandlerInfo(type = "privateStatistics", accessRight = UserRole.ADMIN)
 public class PrivateStatisticsHandler extends Handler {
+
+    private static final String USERS = "users";
+    private static final String MODERATORS = "moderators";
+    private static final String ADMINS = "admins";
+    private static final String INCIDENTS = "incidents";
+    private static final String PUBLISH_COUNT = "publishCount";
+    private static final String REJECT_COUNT = "rejectCount";
+    private static final String DELETE_COUNT = "deleteCount";
+
     @Autowired
     private UserService userService;
 
@@ -23,18 +33,21 @@ public class PrivateStatisticsHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
+    private AnswerService answerService;
+
+    @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {
-        if(update.hasCallbackQuery()){
+        if (update.hasCallbackQuery()) {
             EditMessageText editMessageText = new EditMessageText();
 
             editMessageText.setChatId(user.getId());
 
             editMessageText.setText(getStatistics(user.getLanguage(), Calendar.getInstance()));
 
-            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user));
+            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
             editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
             editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
 
@@ -49,7 +62,7 @@ public class PrivateStatisticsHandler extends Handler {
                 new SendMessage()
                         .setText(getStatistics(user.getLanguage(), Calendar.getInstance()))
                         .setChatId(user.getId())
-                        .setReplyMarkup(getInlineKeyboardMarkup(user)));
+                        .setReplyMarkup(getInlineKeyboardMarkup(user, update)));
     }
 
     private String getStatistics(Language language, Calendar calendarInstance){
@@ -68,15 +81,21 @@ public class PrivateStatisticsHandler extends Handler {
         }
 
         StringBuilder stringBuilder = new StringBuilder()
-                .append("Statistics").append("\n")
+                .append(getAnswer(language).getText()).append("\n")
                 .append("\n")
-                .append("Users ").append(userService.size(UserRole.USER)).append("\n")
-                .append("Moderators ").append(userService.size(UserRole.MODERATOR)).append("\n")
-                .append("Admins ").append(userService.size(UserRole.ADMIN)).append("\n")
-                .append("Incidents").append("\n")
-                .append("Publish count ").append(incidentService.size(IncidentType.PUBLISH)).append("\n")
-                .append("Reject count ").append(incidentService.size(IncidentType.REJECT)).append("\n")
-                .append("Delete count ").append(incidentService.size(IncidentType.DELETE)).append("\n")
+                .append(answerService.get(USERS, language).getText()).append(" ")
+                .append(userService.size(UserRole.USER)).append("\n")
+                .append(answerService.get(MODERATORS, language).getText()).append(" ")
+                .append(userService.size(UserRole.MODERATOR)).append("\n")
+                .append(answerService.get(ADMINS, language).getText()).append(" ")
+                .append(userService.size(UserRole.ADMIN)).append("\n")
+                .append(answerService.get(INCIDENTS, language).getText()).append("\n")
+                .append(answerService.get(PUBLISH_COUNT, language).getText()).append(" ")
+                .append(incidentService.size(IncidentType.PUBLISH)).append("\n")
+                .append(answerService.get(REJECT_COUNT, language).getText()).append(" ")
+                .append(incidentService.size(IncidentType.REJECT)).append("\n")
+                .append(answerService.get(DELETE_COUNT, language).getText()).append(" ")
+                .append(incidentService.size(IncidentType.DELETE)).append("\n")
                 .append("\n")
                 .append(calendarInstance.get(Calendar.HOUR_OF_DAY)).append(":");
 

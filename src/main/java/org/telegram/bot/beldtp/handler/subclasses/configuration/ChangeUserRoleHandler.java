@@ -7,12 +7,19 @@ import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockin
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @HandlerInfo(type = "changeUserRole", accessRight = UserRole.USER)
 public class ChangeUserRoleHandler extends Handler {
+
+    private static final String YOU_CANNOT_CHANGE_YOURE_ROLE = "youCannotChangeYoureRole";
+    private static final String SET = "set";
+
+    @Autowired
+    private AnswerService answerService;
 
     @Autowired
     private UserService userService;
@@ -50,7 +57,8 @@ public class ChangeUserRoleHandler extends Handler {
                     new TelegramResponse(
                             new AnswerCallbackQuery()
                                     .setCallbackQueryId(update.getCallbackQuery().getId())
-                                    .setText("You cannot change you're role")
+                                    .setText(answerService
+                                            .get(YOU_CANNOT_CHANGE_YOURE_ROLE, user.getLanguage()).getText())
                     ));
 
             return removeFromHandler(user, update);
@@ -64,7 +72,9 @@ public class ChangeUserRoleHandler extends Handler {
                         new TelegramResponse(
                                 new AnswerCallbackQuery()
                                         .setCallbackQueryId(update.getCallbackQuery().getId())
-                                        .setText("Set " + role.name() + " to @" + foundUser.getUsername())
+                                        .setText(answerService
+                                                .get(SET, user.getLanguage()) + role.name()
+                                                + " @" + foundUser.getUsername())
                         ));
             }
         }

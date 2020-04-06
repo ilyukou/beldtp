@@ -3,12 +3,11 @@ package org.telegram.bot.beldtp.handler.subclasses.add.time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.TimeHourHandler;
+import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.HourTimeHandler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Calendar;
@@ -22,7 +21,7 @@ public class TimeTodayHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private TimeHourHandler timeHourLogicComponent;
+    private HourTimeHandler timeHourLogicComponent;
 
     @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
@@ -48,13 +47,6 @@ public class TimeTodayHandler extends Handler {
 
         incident.setTime(time);
         incident = incidentService.save(incident);
-
-        if(update.hasCallbackQuery()){
-            telegramResponseBlockingQueue.push(
-                    new TelegramResponse(new AnswerCallbackQuery()
-                            .setCallbackQueryId(update.getCallbackQuery().getId()))
-            );
-        }
 
         return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }

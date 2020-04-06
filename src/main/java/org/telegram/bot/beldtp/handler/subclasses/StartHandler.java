@@ -15,7 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Stack;
 
-@HandlerInfo(type = "registration", accessRight = UserRole.USER)
+@HandlerInfo(type = "start", accessRight = UserRole.USER)
 public class StartHandler extends Handler {
 
     @Autowired
@@ -33,7 +33,7 @@ public class StartHandler extends Handler {
     private void pushStartMessage(User user, Update update){
         Language language = Language.BE;
 
-        // if user has language set user language
+        // If user has language set user language
         if (user != null && user.getLanguage() != null){
             language = user.getLanguage();
         }
@@ -49,7 +49,7 @@ public class StartHandler extends Handler {
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {
-        // user is complete all registration
+        // User is complete all registration
         if(user != null && user.getLanguage() != null && user.getStatus() != null){
             return handle(user,update);
         }
@@ -59,13 +59,13 @@ public class StartHandler extends Handler {
         Stack<String> stack = new Stack<>();
         stack.push(getType());
 
-        // user not exist
+        // User not exist
         if(user == null || user.getId() == null || !userService.isExist(user.getId())){
             stack.push(languageHandler.getType());
             user = new User(update);
 
         } else {
-            // user exist
+            // User exist
             stack.push(mainHandler.getType());
         }
 
@@ -79,8 +79,7 @@ public class StartHandler extends Handler {
 
         if (user.getLanguage() != null){
             user.pushStatus(mainHandler.getType());
-//            user.setRole(UserRole.USER);
-            user.setRole(UserRole.ADMIN); // FIXME
+            user.setRole(UserRole.USER);
 
         } else {
             Stack<String> status = new Stack<>();

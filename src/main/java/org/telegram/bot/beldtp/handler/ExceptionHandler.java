@@ -31,7 +31,7 @@ public class ExceptionHandler extends Handler {
     public TelegramResponse getMessage(User user, Update update) {
         if (user == null || user.getId() == null) {
             return new TelegramResponse(new SendMessage()
-                    .setText("Critical error")
+                    .setText("Error")
                     .setChatId(Objects.requireNonNull(UpdateUtil.getChatId(update))));
         }
 

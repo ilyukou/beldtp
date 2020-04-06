@@ -7,6 +7,7 @@ import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @HandlerInfo(type = "back", accessRight = UserRole.USER)
@@ -16,9 +17,14 @@ public class BackHandler extends Handler {
     private UserService userService;
 
     @Override
+    public String getLabel(User user, Update update) {
+        return EmojiUtil.REVERSE_BUTTON + " " + getAnswer(user.getLanguage()).getLabel();
+    }
+
+    @Override
     public TelegramResponse getMessage(User user, Update update) {
 
-        if(user.peekStatus().equals(getType())){
+        if (user.peekStatus().equals(getType())) {
             user.popStatus(); // pop back
         }
 

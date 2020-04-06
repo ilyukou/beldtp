@@ -6,6 +6,7 @@ import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -22,14 +23,17 @@ import java.util.List;
 @HandlerInfo(type = "readyQueue", accessRight = UserRole.MODERATOR)
 public class ReadyQueueHandler extends Handler {
 
-    private static final String CONFIRM = "Confirm";
-
-    private static final String REJECT = "Reject";
+    private static final String VERIFY_BUTTON = "verifyButton";
+    private static final String REJECT_BUTTON = "rejectButton";
+    private static final String NOT_READY_INCIDENT = "notReadyIncident";
 
     private static final IncidentType READY_INCIDENT_TYPE = IncidentType.READY;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AnswerService answerService;
 
     @Autowired
     private IncidentService incidentService;
@@ -39,6 +43,12 @@ public class ReadyQueueHandler extends Handler {
 
     @Autowired
     private BackHandler backHandler;
+
+    @Override
+    public String getLabel(User user, Update update) {
+        return new StringBuilder().append(incidentService.get(IncidentType.READY).size()).append(" | ")
+                .append(getAnswer(user.getLanguage()).getLabel()).toString();
+    }
 
     @Override
     public TelegramResponse getMessage(User user, Update update) {
@@ -51,7 +61,7 @@ public class ReadyQueueHandler extends Handler {
             user = userService.save(user);
 
             return new TelegramResponse(new AnswerCallbackQuery()
-                    .setText("Ready incidents size is 0")
+                    .setText(answerService.get(NOT_READY_INCIDENT, user.getLanguage()).getText())
                     .setCallbackQueryId(update.getCallbackQuery().getId()));
         }
 
@@ -62,7 +72,7 @@ public class ReadyQueueHandler extends Handler {
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(user.getId());
-        sendMessage.setText("Verify ?");
+        sendMessage.setText(getAnswer(user.getLanguage()).getText());
         sendMessage.setReplyMarkup(getReplyMarkup(incidents.get(0), user));
 
         return new TelegramResponse(sendMessage);
@@ -74,12 +84,12 @@ public class ReadyQueueHandler extends Handler {
         List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
-                .setText(CONFIRM)
-                .setCallbackData(CONFIRM + "-" + incident.getId())));
+                .setText(VERIFY_BUTTON)
+                .setCallbackData(VERIFY_BUTTON + "-" + incident.getId())));
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
-                .setText(REJECT)
-                .setCallbackData(REJECT + "-" + incident.getId())));
+                .setText(REJECT_BUTTON)
+                .setCallbackData(REJECT_BUTTON + "-" + incident.getId())));
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
                 .setText(backHandler.getAnswer(user.getLanguage()).getText())
@@ -100,8 +110,8 @@ public class ReadyQueueHandler extends Handler {
             return null;
         }
 
-        if (!(update.getCallbackQuery().getData().contains(CONFIRM)
-                || update.getCallbackQuery().getData().contains(REJECT))) {
+        if (!(update.getCallbackQuery().getData().contains(VERIFY_BUTTON)
+                || update.getCallbackQuery().getData().contains(REJECT_BUTTON))) {
             return null;
         }
 
@@ -112,11 +122,11 @@ public class ReadyQueueHandler extends Handler {
 
         Incident incident = incidentService.get(id);
 
-        if (method.equals(CONFIRM)) {
+        if (method.equals(VERIFY_BUTTON)) {
             incident.setType(IncidentType.VERIFY);
         }
 
-        if (method.equals(REJECT)) {
+        if (method.equals(REJECT_BUTTON)) {
             incident.setType(IncidentType.REJECT);
         }
 

@@ -7,6 +7,7 @@ import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.repository.interf.UserRepository;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
@@ -19,6 +20,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    @Override
+    public User update(User user, Update update) {
+        int i = 0;
+        org.telegram.telegrambots.meta.api.objects.User userFromUpdate = null;
+
+        if (update.hasCallbackQuery()) {
+            userFromUpdate = update.getCallbackQuery().getFrom();
+        }
+
+        if (update.hasMessage()) {
+            userFromUpdate = update.getMessage().getFrom();
+        }
+
+        if (userFromUpdate == null) {
+            return user;
+        }
+
+        user = user.update(userFromUpdate);
+
+        return save(user);
     }
 
     @Override

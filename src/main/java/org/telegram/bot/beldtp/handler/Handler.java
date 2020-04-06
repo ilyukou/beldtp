@@ -6,14 +6,14 @@ import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.InlineKeyboardMarkupUtil;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,82 +33,66 @@ public abstract class Handler {
     private BackHandler backHandler;
 
     private UserRole accessRight;
+
     private String type;
-    private byte maxHandlerInRow;
 
-    public InlineKeyboardMarkup getInlineKeyboardMarkup(User user){
-//        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-//        markupInline.setKeyboard(getAvailableHandlerForUser(user.getRole())
-//                .parallelStream()
-//                .map(handler -> Collections.singletonList(new InlineKeyboardButton()
-//                        .setText(answerService.get(handler.getType(), user.getLanguage()).getLabel())
-//                        .setCallbackData(answerService.get(handler.getType(), user.getLanguage()).getType())))
-//                .collect(Collectors.toList()));
+    private byte maxButtonInRow;
 
-        List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
-        List<Handler> handlers = getAvailableHandlerForUser(user.getRole());
-
-        for (int i = 0; i < handlers.size() ; i += getMaxHandlerInRow()) {
-            List<InlineKeyboardButton> row = new LinkedList<>();
-
-            if(i + getMaxHandlerInRow() > handlers.size()){
-                for (int j = i; j < handlers.size(); j++) {
-                    row.add(
-                            new InlineKeyboardButton()
-                                    .setText(answerService.get(handlers.get(j).getType(),
-                                            user.getLanguage()).getLabel())
-                                    .setCallbackData(answerService.get(handlers.get(j).getType(),
-                                            user.getLanguage()).getType()));
-                }
-            } else {
-                for (int j = i; j < i + getMaxHandlerInRow(); j++) {
-                    row.add(
-                            new InlineKeyboardButton()
-                                    .setText(answerService.get(handlers.get(j).getType(),
-                                            user.getLanguage()).getLabel())
-                                    .setCallbackData(answerService.get(handlers.get(j).getType(),
-                                            user.getLanguage()).getType()));
-                }
-
-            }
-
-            buttons.add(row);
-        }
-
-        return new InlineKeyboardMarkup().setKeyboard(buttons);
+    public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
+        return InlineKeyboardMarkupUtil
+                .getMarkup(
+                        getAvailableHandlerForUser(user.getRole()),
+                        user, update,
+                        getMaxButtonInRow());
     }
 
     public TelegramResponse getMessage(User user, Update update) {
 
-        InlineKeyboardMarkup markupInline  = getInlineKeyboardMarkup(user);
+        if (user.getLanguage() == null) { // FIXME - add default language for user which not has language
+            user.setLanguage(Language.BE);
+        }
 
-        if(update.hasCallbackQuery()){
+        if (update.hasCallbackQuery()) {
             EditMessageText editMessageText = new EditMessageText();
 
             editMessageText.setChatId(user.getId());
-            editMessageText.setText(getAnswer(user.getLanguage()).getText());
-            editMessageText.setReplyMarkup(markupInline);
+            editMessageText.setText(getText(user, update));
+            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
 
             editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
             editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+            editMessageText.setParseMode(getParseMode(user, update));
 
-            return new TelegramResponse(editMessageText,update);
+            return new TelegramResponse(editMessageText, update);
         }
 
         SendMessage sendMessage = new SendMessage();
 
         sendMessage.setChatId(user.getId());
-        sendMessage.setText(getAnswer(user.getLanguage()).getText());
-        sendMessage.setReplyMarkup(markupInline);
+        sendMessage.setText(getText(user, update));
+        sendMessage.setReplyMarkup(getInlineKeyboardMarkup(user, update));
+        sendMessage.setParseMode(getParseMode(user, update));
 
         return new TelegramResponse(sendMessage);
     }
 
-    public TelegramResponse handle(User user, Update update){
-        return transaction(user,update);
+    public String getText(User user, Update update) {
+        return getAnswer(user.getLanguage()).getText();
     }
 
-    public TelegramResponse transaction(User user, Update update){
+    public String getLabel(User user, Update update) {
+        return getAnswer(user.getLanguage()).getLabel();
+    }
+
+    public String getParseMode(User user, Update update) {
+        return ParseMode.MARKDOWN;
+    }
+
+    public TelegramResponse handle(User user, Update update) {
+        return transaction(user, update);
+    }
+
+    public TelegramResponse transaction(User user, Update update) {
 
         if (update.hasCallbackQuery()) {
             for (Handler handler : getAvailableHandlerForUser(user.getRole())) {
@@ -161,11 +145,11 @@ public abstract class Handler {
         this.type = type;
     }
 
-    public byte getMaxHandlerInRow() {
-        return maxHandlerInRow;
+    public byte getMaxButtonInRow() {
+        return maxButtonInRow;
     }
 
-    public void setMaxHandlerInRow(byte maxHandlerInRow) {
-        this.maxHandlerInRow = maxHandlerInRow;
+    public void setMaxButtonInRow(byte maxButtonInRow) {
+        this.maxButtonInRow = maxButtonInRow;
     }
 }

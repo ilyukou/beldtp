@@ -3,8 +3,8 @@ package org.telegram.bot.beldtp.handler.subclasses.add.time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.TimeDayHandler;
-import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.TimeHourHandler;
+import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.DayTimeHandler;
+import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.HourTimeHandler;
 import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -24,10 +24,10 @@ public class TimeYesterdayHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private TimeHourHandler timeHourLogicComponent;
+    private HourTimeHandler timeHourLogicComponent;
 
     @Autowired
-    private TimeDayHandler timeDayLogicComponent;
+    private DayTimeHandler timeDayLogicComponent;
 
     @Autowired
     private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
@@ -50,15 +50,15 @@ public class TimeYesterdayHandler extends Handler {
                time.setYear(calendar.get(Calendar.YEAR));
                time.setMonth((byte) (calendar.get(Calendar.MONTH) - 1));
                time.setDay((byte)
-                       timeDayLogicComponent.getCountOfMonth(
+                       timeDayLogicComponent.getCountDayInMonth(
                                calendar.get(Calendar.MONTH),
-                                       calendar.get(Calendar.YEAR)));
+                               calendar.get(Calendar.YEAR)));
            } else {
              // today first day of first month in this year (1.1.2020) - i need (31.12.2019)
                time.setYear(calendar.get(Calendar.YEAR) - 1);
                time.setMonth((byte) 11);
                time.setDay((byte)
-                       timeDayLogicComponent.getCountOfMonth(
+                       timeDayLogicComponent.getCountDayInMonth(
                                11,
                                calendar.get(Calendar.YEAR) - 1));
            }
