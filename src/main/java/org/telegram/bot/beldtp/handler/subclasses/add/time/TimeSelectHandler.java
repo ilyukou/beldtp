@@ -4,13 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.YearTimeHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.List;
 
 @HandlerInfo(type = "timeSelect", accessRight = UserRole.USER)
 public class TimeSelectHandler extends Handler {
@@ -21,11 +22,8 @@ public class TimeSelectHandler extends Handler {
     @Autowired
     private YearTimeHandler timeYearLogicComponent;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
 
         if(getType().equals(user.peekStatus())){
             user.popStatus();
@@ -35,12 +33,12 @@ public class TimeSelectHandler extends Handler {
         user = userService.save(user);
 
         if(update.hasCallbackQuery()){
-            telegramResponseBlockingQueue.push(
+            responses.add(
                     new TelegramResponse(new AnswerCallbackQuery()
                             .setCallbackQueryId(update.getCallbackQuery().getId()))
             );
         }
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

@@ -2,7 +2,6 @@ package org.telegram.bot.beldtp.handler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
@@ -13,6 +12,7 @@ import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
 import java.util.Objects;
 
 @HandlerInfo(type = "exception", accessRight = UserRole.USER)
@@ -24,15 +24,13 @@ public class ExceptionHandler extends Handler {
     @Autowired
     private AnswerService answerService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
         if (user == null || user.getId() == null) {
-            return new TelegramResponse(new SendMessage()
+            responses.add(new TelegramResponse(new SendMessage()
                     .setText("Error")
-                    .setChatId(Objects.requireNonNull(UpdateUtil.getChatId(update))));
+                    .setChatId(Objects.requireNonNull(UpdateUtil.getChatId(update)))));
+            return responses;
         }
 
         if (user.peekStatus().equals(getType())) {
@@ -45,15 +43,10 @@ public class ExceptionHandler extends Handler {
             user = userService.save(user);
         }
 
-        telegramResponseBlockingQueue.push(new TelegramResponse(new SendMessage()
+        responses.add(new TelegramResponse(new SendMessage()
                 .setChatId(user.getId())
                 .setText(getAnswer(user.getLanguage()).getText())));
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
-    }
-
-    @Override
-    public TelegramResponse handle(User user, Update update) {
-        return null;
+        return super.getHandlerByStatus(user.peekStatus()).getSendMessage(responses, user, update);
     }
 }

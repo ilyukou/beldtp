@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.bot.beldtp.handler.UpdateHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -19,9 +18,6 @@ import javax.annotation.PostConstruct;
 public class BeldtpBot extends TelegramLongPollingBot {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BeldtpBot.class);
-
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
 
     @Value("${bot.token}")
@@ -45,7 +41,7 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        telegramResponseBlockingQueue.push(updateHandler.handle(update));
+        updateHandler.handle(update).forEach(this::executeTelegramResponse);
     }
 
     @PostConstruct

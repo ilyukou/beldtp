@@ -13,11 +13,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@link HandlerInfo} access for usage only for {@link org.telegram.bot.beldtp.handler.Handler}
+ * {@link HandlerInfo} access for usage only for {@link Handler}
  * If you use {@link HandlerInfo} with another class, than
- * {@link HandlerInfoBeanPostProcessor#postProcessAfterInitialization(Object, String)} throws exception
+ * {@link HandlerInfoAnnotationBeanPostProcessor#postProcessAfterInitialization(Object, String)} throws exception
  *
- * @exception  BeanNotOfRequiredTypeException if class not cast to {@link org.telegram.bot.beldtp.handler.Handler}
+ * @exception  BeanNotOfRequiredTypeException if class not cast to {@link Handler}
  * @exception  IllegalArgumentException if {@link Handler} with such type exist
  */
 
@@ -27,21 +27,21 @@ import java.lang.annotation.Target;
 public @interface HandlerInfo {
 
     /**
-     * Unique key for {@link org.telegram.bot.beldtp.handler.Handler} like hash.
-     * {@link HandlerInfoBeanPostProcessor} set this param in {@link Handler#setType(String)}
+     * Unique key for {@link Handler} like hash.
+     * {@link HandlerInfoAnnotationBeanPostProcessor} set this param in {@link Handler#setType(String)}
      */
     String type();
 
     /**
-     * Access right for {@link org.telegram.bot.beldtp.handler.Handler}
-     * If {@link User} have {@link UserRole#getValue()} equal or more than in {@link org.telegram.bot.beldtp.handler.Handler}
-     * User have access for handle his message in {@link org.telegram.bot.beldtp.handler.Handler}
+     * Access right for {@link Handler}
+     * If {@link User} have {@link UserRole#getValue()} equal or more than in {@link Handler}
+     * User have access for handle his message in {@link Handler}
      */
     UserRole accessRight();
 
     /**
      * Required a count of handler in row. Range of accountable start from 1 to 5.
-     * If value more than or less than 1-5 {@link HandlerInfoBeanPostProcessor} set 1
+     * If value more than or less than 1-5 {@link HandlerInfoAnnotationBeanPostProcessor} set 1
      *
      * @return count of button in a row
      */

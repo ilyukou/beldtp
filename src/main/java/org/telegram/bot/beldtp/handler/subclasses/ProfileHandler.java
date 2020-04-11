@@ -13,24 +13,26 @@ public class ProfileHandler extends Handler {
     public String getText(User user, Update update) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(getAnswer(user.getLanguage()).getLabel()).append("\n");
+        builder.append(getAnswer(user.getLanguage()).getText()).append("\n");
         builder.append("\n");
 
-        if (user.getFirstName() != null) {
-            builder.append(user.getFirstName());
-        }
+        if (user.getFirstName() != null && user.getLastName() != null) {
+            builder.append(user.getFirstName()).append(" ").append(user.getLastName()).append("\n");
 
-        if (user.getLastName() != null) {
+        } else if (user.getFirstName() != null) {
+            builder.append(user.getFirstName()).append("\n");
+
+        } else if (user.getLastName() != null) {
             builder.append(" ").append(user.getLastName()).append("\n");
         }
 
-        if(user.getUsername() != null){
+        if (user.getUsername() != null) {
             builder.append("@").append(user.getUsername()).append("\n").append("\n");
         }
 
-        if(user.getLanguage() != null){
-            builder.append(user.getLanguage().getValue());
-        }
+//        if (user.getLanguage() != null) {
+//            builder.append(user.getLanguage().getValue());
+//        }
 
         return builder.toString();
     }

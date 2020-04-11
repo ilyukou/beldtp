@@ -1,4 +1,4 @@
-package org.telegram.bot.beldtp.handler.subclasses;
+package org.telegram.bot.beldtp.handler.subclasses.add;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
@@ -7,15 +7,18 @@ import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
+import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
-@HandlerInfo(type = "backAndRejectIncident", accessRight = UserRole.USER)
-public class BackAndRejectIncidentHandler extends Handler {
+@HandlerInfo(type = "deleteMedia", accessRight = UserRole.USER)
+public class DeleteMediaHandler extends Handler {
 
     @Autowired
     private UserService userService;
@@ -24,7 +27,10 @@ public class BackAndRejectIncidentHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private MainHandler mainHandler;
+    private MediaService mediaService;
+
+    @Autowired
+    private AnswerService answerService;
 
     @Override
     public String getLabel(User user, Update update) {
@@ -35,21 +41,23 @@ public class BackAndRejectIncidentHandler extends Handler {
     public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
+        draft.getMedia().clear();
+        draft = incidentService.save(draft);
 
-        while (!user.peekStatus().equals(mainHandler.getType())) {
+        if (user.peekStatus().equals(getType())) {
             user.popStatus();
         }
 
-        user.remove(draft);
         user = userService.save(user);
 
-        incidentService.delete(draft);
+        if (update.hasCallbackQuery()) {
+            responses.add(
+                            new TelegramResponse(
+                                    new AnswerCallbackQuery()
+                                            .setCallbackQueryId(update.getCallbackQuery().getId())
+                                            .setText(getText(user, update))));
+        }
 
         return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
-    }
-
-    @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        return getMessage(responses, user, update);
     }
 }

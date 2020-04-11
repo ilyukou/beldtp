@@ -28,4 +28,9 @@ public class MediaServiceImpl implements MediaService {
     public List<Media> getAll() {
         return mediaRepository.getAll();
     }
+
+    @Override
+    public void delete(Media media) {
+        mediaRepository.delete(media);
+    }
 }

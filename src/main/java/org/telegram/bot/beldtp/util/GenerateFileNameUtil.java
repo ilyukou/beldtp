@@ -1,13 +1,19 @@
 package org.telegram.bot.beldtp.util;
 
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
 public class GenerateFileNameUtil {
 
-    private static String alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    @Value("${beldtp.filename.alphabet}")
+    private String alphabet;
 
+    @Value("${beldtp.filename.length}")
     private static int length = 100;
 
-    public static String generate(String originalFileName) {
+    public String generate(String originalFileName) {
 
         if (length > 255 || length > alphabet.length()) {
             length = alphabet.length();
@@ -17,12 +23,12 @@ public class GenerateFileNameUtil {
         return generateName() + "." + contentType;
     }
 
-    public static String getFromFileNameContentType(String originalFileName) {
+    public String getFromFileNameContentType(String originalFileName) {
         String[] s = originalFileName.split("\\.");
         return s[1];
     }
 
-    public static String generateName() {
+    public String generateName() {
         StringBuilder name = new StringBuilder();
 
         for (int i = 0; i < length; i++) {

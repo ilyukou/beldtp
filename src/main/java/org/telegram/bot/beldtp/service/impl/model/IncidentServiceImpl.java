@@ -92,6 +92,9 @@ public class IncidentServiceImpl implements IncidentService {
                 inputMedia.setCaption(null);
             });
 
+            text.append("\n").append("\n");
+            text.append(incident.getTime().toString());
+
             list.get(0).setCaption(text.toString());
 
             sendMediaGroup.setMedia(list);

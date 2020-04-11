@@ -14,7 +14,7 @@ public class Incident {
 
     private String text;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "incident", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "incident", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Media> media = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

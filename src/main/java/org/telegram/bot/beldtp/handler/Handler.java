@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Component
 public abstract class Handler {
 
+    private static final String DEFAULT_HANDLER = "main";
+
     @Autowired
     private AnswerService answerService;
 
@@ -46,26 +48,7 @@ public abstract class Handler {
                         getMaxButtonInRow());
     }
 
-    public TelegramResponse getMessage(User user, Update update) {
-
-        if (user.getLanguage() == null) { // FIXME - add default language for user which not has language
-            user.setLanguage(Language.BE);
-        }
-
-        if (update.hasCallbackQuery()) {
-            EditMessageText editMessageText = new EditMessageText();
-
-            editMessageText.setChatId(user.getId());
-            editMessageText.setText(getText(user, update));
-            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
-
-            editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
-            editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
-            editMessageText.setParseMode(getParseMode(user, update));
-
-            return new TelegramResponse(editMessageText, update);
-        }
-
+    public List<TelegramResponse> getSendMessage(List<TelegramResponse> responses, User user, Update update) {
         SendMessage sendMessage = new SendMessage();
 
         sendMessage.setChatId(user.getId());
@@ -73,7 +56,36 @@ public abstract class Handler {
         sendMessage.setReplyMarkup(getInlineKeyboardMarkup(user, update));
         sendMessage.setParseMode(getParseMode(user, update));
 
-        return new TelegramResponse(sendMessage);
+        responses.add(new TelegramResponse(sendMessage));
+        return responses;
+    }
+
+    public List<TelegramResponse> getEditMessageText(List<TelegramResponse> responses, User user, Update update) {
+        EditMessageText editMessageText = new EditMessageText();
+
+        editMessageText.setChatId(user.getId());
+        editMessageText.setText(getText(user, update));
+        editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
+
+        editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
+        editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+        editMessageText.setParseMode(getParseMode(user, update));
+
+        responses.add(new TelegramResponse(editMessageText,update));
+        return responses;
+    }
+
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+
+        if (user.getLanguage() == null) { // FIXME - add default language for user which not has language
+            user.setLanguage(Language.BE);
+        }
+
+        if (update.hasCallbackQuery()) {
+            return getEditMessageText(responses,user, update);
+        }
+
+        return getSendMessage(responses,user, update);
     }
 
     public String getText(User user, Update update) {
@@ -88,11 +100,11 @@ public abstract class Handler {
         return ParseMode.MARKDOWN;
     }
 
-    public TelegramResponse handle(User user, Update update) {
-        return transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        return transaction(responses,user, update);
     }
 
-    public TelegramResponse transaction(User user, Update update) {
+    public List<TelegramResponse> transaction(List<TelegramResponse> responses, User user, Update update) {
 
         if (update.hasCallbackQuery()) {
             for (Handler handler : getAvailableHandlerForUser(user.getRole())) {
@@ -102,7 +114,7 @@ public abstract class Handler {
 
                     user = userService.save(user);
 
-                    return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+                    return getHandlerByStatus(user.peekStatus()).getMessage(responses,user, update);
                 }
             }
         }
@@ -111,7 +123,13 @@ public abstract class Handler {
     }
 
     public Handler getHandlerByStatus(String peekStatus) {
-        return handlerMap.get(peekStatus);
+        Handler handler = handlerMap.get(peekStatus);
+
+        if (handler != null){
+            return handler;
+        }
+
+        return handlerMap.get(DEFAULT_HANDLER);
     }
 
     public final List<Handler> getAvailableHandlerForUser(UserRole role) {

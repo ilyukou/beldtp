@@ -5,7 +5,6 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -21,7 +20,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-@HandlerInfo(type = "timeMonth", accessRight = UserRole.USER)
+@HandlerInfo(type = "timeMonth", accessRight = UserRole.USER, maxButtonInRow = 3)
 public class MonthTimeHandler extends Handler {
 
     private static List<String> MONTH_OF_YEAR = Arrays
@@ -46,9 +45,6 @@ public class MonthTimeHandler extends Handler {
     private AnswerService answerRamStorage;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
-    @Autowired
     private BackHandler backHandler;
 
     @Autowired
@@ -61,8 +57,8 @@ public class MonthTimeHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        TelegramResponse transition = transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -100,7 +96,7 @@ public class MonthTimeHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private boolean isValid(Update update) {
@@ -154,7 +150,7 @@ public class MonthTimeHandler extends Handler {
 
         for (int i = 0; i < month; i++) {
             buttons.add(new InlineKeyboardButton()
-                    .setText(answerRamStorage.get(MONTH_OF_YEAR.get(i), user.getLanguage()).getLabel())
+                    .setText(answerRamStorage.get(MONTH_OF_YEAR.get(i), user.getLanguage()).getText())
                     .setCallbackData(MONTH_OF_YEAR.get(i)));
         }
 

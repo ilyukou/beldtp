@@ -3,7 +3,6 @@ package org.telegram.bot.beldtp.handler.subclasses.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -35,34 +34,9 @@ public class PrivateStatisticsHandler extends Handler {
     @Autowired
     private AnswerService answerService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
-        if (update.hasCallbackQuery()) {
-            EditMessageText editMessageText = new EditMessageText();
-
-            editMessageText.setChatId(user.getId());
-
-            editMessageText.setText(getStatistics(user.getLanguage(), Calendar.getInstance()));
-
-            editMessageText.setReplyMarkup(getInlineKeyboardMarkup(user, update));
-            editMessageText.setInlineMessageId(update.getCallbackQuery().getInlineMessageId());
-            editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
-
-            telegramResponseBlockingQueue.push(
-                    new TelegramResponse(new AnswerCallbackQuery()
-                            .setCallbackQueryId(update.getCallbackQuery().getId())));
-
-            return new TelegramResponse(editMessageText,update);
-        }
-
-        return new TelegramResponse(
-                new SendMessage()
-                        .setText(getStatistics(user.getLanguage(), Calendar.getInstance()))
-                        .setChatId(user.getId())
-                        .setReplyMarkup(getInlineKeyboardMarkup(user, update)));
+    public String getText(User user, Update update) {
+        return getStatistics(user.getLanguage(), Calendar.getInstance());
     }
 
     private String getStatistics(Language language, Calendar calendarInstance){

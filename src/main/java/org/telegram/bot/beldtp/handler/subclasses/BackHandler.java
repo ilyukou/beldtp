@@ -10,6 +10,8 @@ import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+
 @HandlerInfo(type = "back", accessRight = UserRole.USER)
 public class BackHandler extends Handler {
 
@@ -22,7 +24,7 @@ public class BackHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
 
         if (user.peekStatus().equals(getType())) {
             user.popStatus(); // pop back
@@ -32,11 +34,11 @@ public class BackHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        return getMessage(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        return getMessage(responses, user, update);
     }
 }

@@ -3,12 +3,14 @@ package org.telegram.bot.beldtp.handler.subclasses.add;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
-import org.telegram.bot.beldtp.exception.BadRequestException;
+import org.telegram.bot.beldtp.exception.TextSizeException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackAndRejectIncidentHandler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
-import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.model.Incident;
+import org.telegram.bot.beldtp.model.TelegramResponse;
+import org.telegram.bot.beldtp.model.User;
+import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.MediaService;
@@ -24,6 +26,8 @@ import java.util.List;
 public class AddTextHandler extends Handler {
 
     private static final String REQUIRED_TEXT = "requiredText";
+
+    private static final String TEXT_WAS_ADDED = "textWasAdded";
 
     @Autowired
     private BackHandler backHandler;
@@ -43,15 +47,19 @@ public class AddTextHandler extends Handler {
     @Autowired
     private AnswerService answerService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Value("${beldtp.incident.max-text-size}")
     private Integer maxTextSize;
 
     @Override
     public String getText(User user, Update update) {
-        return super.getText(user, update);
+        Incident draft = incidentService.getDraft(user);
+
+        if (draft.getText() != null) {
+            return answerService.get(TEXT_WAS_ADDED, user.getLanguage()).getText()
+                    + "\n\n" + "_" + draft.getText() + "_";
+        }
+
+        return getAnswer(user.getLanguage()).getText();
     }
 
     @Override
@@ -66,9 +74,9 @@ public class AddTextHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
-        TelegramResponse transaction = transaction(user, update);
+        List<TelegramResponse> transaction = transaction(responses, user, update);
 
         if (transaction != null) {
             return transaction;
@@ -77,7 +85,7 @@ public class AddTextHandler extends Handler {
         if(update.hasMessage() && update.getMessage().hasText()) {
 
             if (!isValid(update)) {
-                throw new BadRequestException();
+                throw new TextSizeException();
             }
 
             Incident draft = incidentService.getDraft(user);
@@ -87,24 +95,21 @@ public class AddTextHandler extends Handler {
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
         }
 
-        return getMessageWhenMediaHasNotText(user.getLanguage(), update);
+        responses.add( new TelegramResponse(
+                new AnswerCallbackQuery()
+                        .setText(answerService.get(REQUIRED_TEXT, user.getLanguage()).getText())
+                        .setCallbackQueryId(update.getCallbackQuery().getId()))
+        );
+        return responses;
     }
 
     private boolean isValid(Update update) {
         String text = update.getMessage().getText();
 
         return text.length() <= maxTextSize;
-    }
-
-    private TelegramResponse getMessageWhenMediaHasNotText(Language language, Update update) {
-        return new TelegramResponse(
-                new AnswerCallbackQuery()
-                        .setText(answerService.get(REQUIRED_TEXT, language).getText())
-                        .setCallbackQueryId(update.getCallbackQuery().getId())
-        );
     }
 
     @Override

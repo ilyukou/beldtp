@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.MainHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -14,6 +13,9 @@ import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.Calendar;
+import java.util.List;
 
 @HandlerInfo(type = "confirm", accessRight = UserRole.USER)
 public class ConfirmAddHandler extends Handler {
@@ -26,18 +28,15 @@ public class ConfirmAddHandler extends Handler {
     private static final String REQUIRED_TIME = "requiredTime";
     private static final String YOU_INCIDENT_BUILD = "youIncidentBuild";
 
-    private static final String PHOTO_EMOJI = "\uD83D\uDDBC";
-
-    private static final String VIDEO_EMOJI = "\uD83D\uDCF9";
+    private static final String MEDIA_WAS_OLD = "mediaWasOld";
+    private static final double HOUR_WHEN_MEDIA_SET_OLD = 20;
+    private static final long HOUR_IN_MILLIS = 3600000;
 
     @Autowired
     private UserService userService;
 
     @Autowired
     private IncidentService incidentService;
-
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Autowired
     private AnswerService answerService;
@@ -51,12 +50,22 @@ public class ConfirmAddHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
-        return handle(user, update);
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+        return handle(responses, user, update);
+    }
+
+    private User removeThisHandler(User user){
+        if (user.peekStatus().equals(getType())) {
+            user.popStatus();
+            user = userService.save(user);
+            return user;
+        }
+
+        return user;
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
         if (!update.hasCallbackQuery() || draft == null) {
@@ -65,24 +74,48 @@ public class ConfirmAddHandler extends Handler {
                 user = userService.save(user);
             }
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
         }
 
         if (draft.getMedia() == null || draft.getMedia().size() == 0) {
-            return getAnswerCallbackQuery(answerService
-                    .get(REQUIRED_MIN_ONE_MEDIA, user.getLanguage()).getText(), user, update);
+            user = removeThisHandler(user);
+
+            responses.add(getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_MIN_ONE_MEDIA, user.getLanguage()).getText(), user, update));
+            return responses;
+        }
+
+        long nowDate = Calendar.getInstance().getTimeInMillis();
+        for (Media media : draft.getMedia()){
+            if(nowDate - HOUR_IN_MILLIS * HOUR_WHEN_MEDIA_SET_OLD > media.getUploadDate()){
+                draft.getMedia().clear();
+                draft = incidentService.save(draft);
+
+                responses.add(getAnswerCallbackQuery(answerService
+                        .get(MEDIA_WAS_OLD, user.getLanguage()).getText(), user, update));
+
+                user = removeThisHandler(user);
+
+                return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            }
         }
 
         if (draft.getText() == null || draft.getText().length() == 0) {
-            return getAnswerCallbackQuery(answerService
-                    .get(REQUIRED_TEXT, user.getLanguage()).getText(), user, update);
+            user = removeThisHandler(user);
+
+            responses.add(getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_TEXT, user.getLanguage()).getText(), user, update));
+            return responses;
         }
 
         if (draft.getLocation() == null
                 || draft.getLocation().getLongitude() == null
                 || draft.getLocation().getLatitude() == null) {
-            return getAnswerCallbackQuery(answerService
-                    .get(REQUIRED_LOCATION, user.getLanguage()).getText(), user, update);
+            user = removeThisHandler(user);
+
+            responses.add(getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_LOCATION, user.getLanguage()).getText(), user, update));
+            return responses;
         }
 
         if (draft.getTime() == null
@@ -91,8 +124,11 @@ public class ConfirmAddHandler extends Handler {
                 || draft.getTime().getDay() == null
                 || draft.getTime().getHour() == null
                 || draft.getTime().getMinute() == null) {
-            return getAnswerCallbackQuery(answerService
-                    .get(REQUIRED_TIME, user.getLanguage()).getText(), user, update);
+            user = removeThisHandler(user);
+
+            responses.add(getAnswerCallbackQuery(answerService
+                    .get(REQUIRED_TIME, user.getLanguage()).getText(), user, update));
+            return responses;
         }
 
         draft.setType(IncidentType.BUILD);
@@ -103,18 +139,13 @@ public class ConfirmAddHandler extends Handler {
         }
 
         user = userService.save(user);
-        telegramResponseBlockingQueue.push(getAnswerCallbackQuery(answerService
+        responses.add(getAnswerCallbackQuery(answerService
                 .get(YOU_INCIDENT_BUILD, user.getLanguage()).getText(), user, update));
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private TelegramResponse getAnswerCallbackQuery(String text, User user, Update update) {
-        if (user.peekStatus().equals(getType())) {
-            user.popStatus();
-            user = userService.save(user);
-        }
-
         return new TelegramResponse(
                 new AnswerCallbackQuery()
                         .setCallbackQueryId(update.getCallbackQuery().getId())

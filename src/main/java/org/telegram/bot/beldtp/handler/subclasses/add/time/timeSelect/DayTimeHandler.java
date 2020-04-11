@@ -7,7 +7,6 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -50,9 +49,6 @@ public class DayTimeHandler extends Handler {
     @Autowired
     private HourTimeHandler hourTimeHandler;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Incident incident = incidentService.getDraft(user);
@@ -63,8 +59,8 @@ public class DayTimeHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        TelegramResponse transition = transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -96,7 +92,7 @@ public class DayTimeHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private boolean isValid(Update update) {

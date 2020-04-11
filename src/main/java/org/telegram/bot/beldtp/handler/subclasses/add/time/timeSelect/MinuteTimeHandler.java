@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
+import org.telegram.bot.beldtp.handler.subclasses.AddHandler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.handler.subclasses.add.AddTimeHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
@@ -32,10 +31,7 @@ public class MinuteTimeHandler extends Handler {
     private UserService userService;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
-    @Autowired
-    private AddTimeHandler addTimeHandler;
+    private AddHandler addHandler;
 
     @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
@@ -44,8 +40,8 @@ public class MinuteTimeHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        TelegramResponse transition = transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -65,11 +61,13 @@ public class MinuteTimeHandler extends Handler {
 
         draft = incidentService.save(draft);
 
-        while (!user.peekStatus().equals(addTimeHandler.getType())) {
+        while (!user.peekStatus().equals(addHandler.getType())) {
             user.popStatus();
         }
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        user = userService.save(user);
+
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private boolean isValid(Update update) {
@@ -80,7 +78,7 @@ public class MinuteTimeHandler extends Handler {
 
         try {
             byte minute = Byte.parseByte(update.getCallbackQuery().getData());
-            if (minute < 0 || minute > 61) {
+            if (minute < 0 || minute > 59) {
                 return false;
             }
         } catch (NumberFormatException e) {
@@ -97,7 +95,7 @@ public class MinuteTimeHandler extends Handler {
             hourString = "0" + hourString;
         }
 
-        int minute = 60;
+        int minute = 59;
 
         Calendar calendar = Calendar.getInstance();
         if(calendar.get(Calendar.YEAR) == time.getYear()

@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.TimeService;
@@ -35,9 +34,6 @@ public class YearTimeHandler extends Handler {
     @Autowired
     private TimeService timeService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         int nowYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -53,9 +49,9 @@ public class YearTimeHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
-        TelegramResponse transition = transaction(user, update);
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -86,7 +82,7 @@ public class YearTimeHandler extends Handler {
         user.pushStatus(monthTimeHandler.getType());
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private boolean isValid(Update update) {

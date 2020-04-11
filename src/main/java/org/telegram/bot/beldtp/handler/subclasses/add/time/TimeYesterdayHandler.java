@@ -5,7 +5,6 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.DayTimeHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.HourTimeHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
@@ -13,6 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Calendar;
+import java.util.List;
 
 @HandlerInfo(type = "timeYesterday", accessRight = UserRole.USER)
 public class TimeYesterdayHandler extends Handler {
@@ -29,11 +29,8 @@ public class TimeYesterdayHandler extends Handler {
     @Autowired
     private DayTimeHandler timeDayLogicComponent;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
         Time time = new Time();
         Incident incident = incidentService.getDraft(user);
 
@@ -42,7 +39,7 @@ public class TimeYesterdayHandler extends Handler {
         if(calendar.get(Calendar.DATE) > 1){
             time.setYear(calendar.get(Calendar.YEAR));
             time.setMonth((byte) calendar.get(Calendar.MONTH));
-            time.setDay((byte) calendar.get(Calendar.DATE));
+            time.setDay((byte) (calendar.get(Calendar.DATE) - 1));
 
         } else { // today first day in month
            if(calendar.get(Calendar.MONTH) > 0){ // 0 - January, 1 - February
@@ -67,7 +64,7 @@ public class TimeYesterdayHandler extends Handler {
         }
 
         if(update.hasCallbackQuery()){
-            telegramResponseBlockingQueue.push(
+            responses.add(
                     new TelegramResponse(new AnswerCallbackQuery()
                             .setCallbackQueryId(update.getCallbackQuery().getId()))
             );
@@ -80,6 +77,6 @@ public class TimeYesterdayHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

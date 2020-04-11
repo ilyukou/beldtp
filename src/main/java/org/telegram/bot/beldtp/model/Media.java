@@ -10,6 +10,8 @@ public class Media {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private long uploadDate;
+
     @Lob
     private String caption;
 
@@ -80,5 +82,13 @@ public class Media {
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+    public long getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(long uploadDate) {
+        this.uploadDate = uploadDate;
     }
 }

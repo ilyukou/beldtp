@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
@@ -39,9 +38,6 @@ public class ReadyQueueHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
-    @Autowired
     private BackHandler backHandler;
 
     @Override
@@ -51,7 +47,7 @@ public class ReadyQueueHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
         List<Incident> incidents = incidentService.get(READY_INCIDENT_TYPE);
 
         if (incidents == null || incidents.size() == 0) {
@@ -60,22 +56,24 @@ public class ReadyQueueHandler extends Handler {
             }
             user = userService.save(user);
 
-            return new TelegramResponse(new AnswerCallbackQuery()
+            responses.add(new TelegramResponse(new AnswerCallbackQuery()
                     .setText(answerService.get(NOT_READY_INCIDENT, user.getLanguage()).getText())
-                    .setCallbackQueryId(update.getCallbackQuery().getId()));
+                    .setCallbackQueryId(update.getCallbackQuery().getId())));
+            return responses;
         }
 
         SendMediaGroup sendMediaGroup = incidentService.getSendMediaGroup(incidents.get(0));
         sendMediaGroup.setChatId(user.getId());
 
-        telegramResponseBlockingQueue.push(new TelegramResponse(sendMediaGroup));
+        responses.add(new TelegramResponse(sendMediaGroup));
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(user.getId());
         sendMessage.setText(getAnswer(user.getLanguage()).getText());
         sendMessage.setReplyMarkup(getReplyMarkup(incidents.get(0), user));
 
-        return new TelegramResponse(sendMessage);
+        responses.add(new TelegramResponse(sendMessage));
+        return responses;
     }
 
     private InlineKeyboardMarkup getReplyMarkup(Incident incident, User user) {
@@ -84,11 +82,11 @@ public class ReadyQueueHandler extends Handler {
         List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
-                .setText(VERIFY_BUTTON)
+                .setText(answerService.get(VERIFY_BUTTON, user.getLanguage()).getLabel())
                 .setCallbackData(VERIFY_BUTTON + "-" + incident.getId())));
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
-                .setText(REJECT_BUTTON)
+                .setText(answerService.get(REJECT_BUTTON, user.getLanguage()).getLabel())
                 .setCallbackData(REJECT_BUTTON + "-" + incident.getId())));
 
         buttons.add(Collections.singletonList(new InlineKeyboardButton()
@@ -99,8 +97,8 @@ public class ReadyQueueHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        TelegramResponse transition = transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -138,6 +136,6 @@ public class ReadyQueueHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

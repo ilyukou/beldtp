@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.timeSelect.HourTimeHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Calendar;
+import java.util.List;
 
 @HandlerInfo(type = "timeToday", accessRight = UserRole.USER)
 public class TimeTodayHandler extends Handler {
@@ -23,11 +23,8 @@ public class TimeTodayHandler extends Handler {
     @Autowired
     private HourTimeHandler timeHourLogicComponent;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
 
         Time time = new Time();
         Incident incident = incidentService.getDraft(user);
@@ -48,6 +45,6 @@ public class TimeTodayHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

@@ -3,7 +3,6 @@ package org.telegram.bot.beldtp.handler.subclasses.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
@@ -11,6 +10,8 @@ import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.List;
 
 @HandlerInfo(type = "changeUserRole", accessRight = UserRole.USER)
 public class ChangeUserRoleHandler extends Handler {
@@ -24,22 +25,20 @@ public class ChangeUserRoleHandler extends Handler {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
-    private TelegramResponse removeFromHandler(User user, Update update) {
+    private List<TelegramResponse> removeFromHandler(List<TelegramResponse> responses,
+                                                     User user, Update update) {
         if (user.peekStatus().equals(getType())) {
             user.popStatus();
         }
         user = userService.save(user);
 
-        return super.getMessage(user, update);
+        return super.getMessage(responses, user, update);
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
         if (!update.hasCallbackQuery() || !update.getCallbackQuery().getData().contains("-")) {
-            return removeFromHandler(user, update);
+            return removeFromHandler(responses,user, update);
         }
 
         String data = update.getCallbackQuery().getData();
@@ -49,11 +48,11 @@ public class ChangeUserRoleHandler extends Handler {
         User foundUser = userService.get(id);
 
         if (foundUser == null) {
-            return removeFromHandler(user, update);
+            return removeFromHandler(responses, user, update);
         }
 
         if (foundUser.getId().equals(user.getId())) {
-            telegramResponseBlockingQueue.push(
+            responses.add(
                     new TelegramResponse(
                             new AnswerCallbackQuery()
                                     .setCallbackQueryId(update.getCallbackQuery().getId())
@@ -61,14 +60,14 @@ public class ChangeUserRoleHandler extends Handler {
                                             .get(YOU_CANNOT_CHANGE_YOURE_ROLE, user.getLanguage()).getText())
                     ));
 
-            return removeFromHandler(user, update);
+            return removeFromHandler(responses, user, update);
         }
 
         for (UserRole role : UserRole.values()) {
             if (role.name().equals(userRole)) {
                 foundUser.setRole(role);
                 foundUser = userService.save(foundUser);
-                telegramResponseBlockingQueue.push(
+                responses.add(
                         new TelegramResponse(
                                 new AnswerCallbackQuery()
                                         .setCallbackQueryId(update.getCallbackQuery().getId())
@@ -79,6 +78,6 @@ public class ChangeUserRoleHandler extends Handler {
             }
         }
 
-        return removeFromHandler(user, update);
+        return removeFromHandler(responses, user, update);
     }
 }

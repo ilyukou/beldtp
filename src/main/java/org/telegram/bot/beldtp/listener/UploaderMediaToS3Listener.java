@@ -42,6 +42,9 @@ public class UploaderMediaToS3Listener {
     @Autowired
     private IncidentService incidentService;
 
+    @Autowired
+    private GenerateFileNameUtil generateFileNameUtil;
+
     private RestTemplate restTemplate = new RestTemplate();
 
     @Scheduled(fixedRate = 10000)
@@ -62,7 +65,7 @@ public class UploaderMediaToS3Listener {
                     }
                     TelegramFileId telegramFileId = get(token, media.getFileId());
 
-                    String filename = GenerateFileNameUtil.generate(telegramFileId.getResult().getFilePath());
+                    String filename = generateFileNameUtil.generate(telegramFileId.getResult().getFilePath());
 
                     byte[] array = getFileAsByteArray(token, telegramFileId.getResult().getFilePath());
 

@@ -17,6 +17,7 @@ public class Answer {
     @Lob
     private String text;
 
+    @Lob
     private String label;
 
     public Answer() {

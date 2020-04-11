@@ -11,9 +11,12 @@ import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.HandlerMap;
 
 @Component
-public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
+public class HandlerInfoAnnotationBeanPostProcessor implements BeanPostProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerInfoBeanPostProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerInfoAnnotationBeanPostProcessor.class);
+    private static final byte MIN_BUTTON_IN_ROW = 1;
+    private static final byte MAX_BUTTON_IN_ROW = 6;
+    private static final byte DEFAULT_BUTTON_IN_ROW = 1;
 
     @Autowired
     private HandlerMap handlerMap;
@@ -45,8 +48,8 @@ public class HandlerInfoBeanPostProcessor implements BeanPostProcessor {
             throw new IllegalArgumentException(e);
         }
 
-        if (mapper.maxButtonInRow() < 1 || mapper.maxButtonInRow() > 5) {
-            handler.setMaxButtonInRow((byte) 1);
+        if (mapper.maxButtonInRow() < MIN_BUTTON_IN_ROW || mapper.maxButtonInRow() > MAX_BUTTON_IN_ROW) {
+            handler.setMaxButtonInRow(DEFAULT_BUTTON_IN_ROW);
         } else {
             handler.setMaxButtonInRow(mapper.maxButtonInRow());
         }

@@ -3,6 +3,7 @@ package org.telegram.bot.beldtp.handler.subclasses.add;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
+import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeNowHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeSelectHandler;
 import org.telegram.bot.beldtp.handler.subclasses.add.time.TimeTodayHandler;
@@ -39,35 +40,42 @@ public class AddTimeHandler extends Handler {
     @Autowired
     private TimeYesterdayHandler timeYesterdayHandler;
 
+    @Autowired
+    private BackHandler backHandler;
+
     @Override
     public String getLabel(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
         if (draft.getTime() != null) {
-            return EmojiUtil.CHECK_MARK_BUTTON + " " + getAnswer(user.getLanguage()).getLabel();
+            StringBuilder builder = new StringBuilder();
+
+            if(draft.getTime().getHour() < 10){
+                builder.append("0").append(draft.getTime().getHour());
+            }else {
+                builder.append(draft.getTime().getHour());
+            }
+
+            builder.append(":");
+
+            if(draft.getTime().getMinute() < 10){
+                builder.append("0").append(draft.getTime().getMinute());
+            }else {
+                builder.append(draft.getTime().getMinute());
+            }
+
+            builder.append("  ");
+            builder.append(draft.getTime().getDay());
+            builder.append("/");
+            builder.append(draft.getTime().getMonth()+1);
+            builder.append("/");
+            builder.append(draft.getTime().getYear());
+
+            return EmojiUtil.CHECK_MARK_BUTTON + " " + builder;
+
         }
 
         return EmojiUtil.WHITE_LARGE_SQUARE + " " + getAnswer(user.getLanguage()).getLabel();
-    }
-
-    @Override
-    public TelegramResponse getMessage(User user, Update update) {
-        Incident incident = incidentService.getDraft(user);
-
-        if (incident.getTime() == null
-                || incident.getTime().getYear() == null
-                || incident.getTime().getMonth() == null
-                || incident.getTime().getDay() == null
-                || incident.getTime().getHour() == null
-                || incident.getTime().getMinute() == null ) {
-            return super.getMessage(user, update);
-
-        } else {
-            user.popStatus();
-            user = userService.save(user);
-
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
-        }
     }
 
     @Override
@@ -75,6 +83,7 @@ public class AddTimeHandler extends Handler {
         return Arrays.asList(timeNowHandler,
                 timeTodayHandler,
                 timeYesterdayHandler,
-                timeSelectHandler);
+                timeSelectHandler,
+                backHandler);
     }
 }

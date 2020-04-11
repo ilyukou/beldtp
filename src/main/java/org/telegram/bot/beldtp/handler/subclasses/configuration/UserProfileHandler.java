@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
@@ -33,21 +32,18 @@ public class UserProfileHandler extends Handler {
     private AnswerService answerService;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
-    @Autowired
     private ChangeUserRoleHandler changeUserRoleHandler;
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        TelegramResponse transaction = transaction(user, update);
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+        List<TelegramResponse> transaction = transaction(responses, user, update);
 
         if (transaction != null) {
             return transaction;
         }
 
         if (update.hasCallbackQuery()) {
-            return changeUserRoleHandler.handle(user, update);
+            return changeUserRoleHandler.handle(responses, user, update);
         }
 
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -55,47 +51,59 @@ public class UserProfileHandler extends Handler {
             User foundUser = userService.get(update.getMessage().getText());
 
             if (foundUser == null) {
-                return getTelegramResponseWhenUserNotExist(update, user);
+                return getTelegramResponseWhenUserNotExist(responses, update, user);
             } else {
-                return getMessageWhenUserFound(update, user, foundUser);
+                return getMessageWhenUserFound(responses, update, user, foundUser);
             }
         } else {
             throw new BadRequestException();
         }
     }
 
-    private TelegramResponse getMessageWhenUserFound(Update update, User admin, User foundUser) {
-        TelegramResponse response = super.getMessage(admin, update);
+    private List<TelegramResponse> getMessageWhenUserFound(List<TelegramResponse> responses,
+                                                           Update update, User admin, User foundUser) {
+        List<TelegramResponse> response = super.getMessage(new LinkedList<>(), admin, update);
 
-        if (response.hasEditMessageText()) {
-            EditMessageText message = response.getEditMessageText();
+        if (response.get(response.size() - 1).hasEditMessageText()) {
+            EditMessageText message = response.get(0).getEditMessageText();
             message
                     .setText(
                             message.getText() + "\n\n" + getUserAsString(foundUser));
             message.setReplyMarkup(inlineKeyboardMarkup(admin, foundUser));
-            return new TelegramResponse(message, update);
+
+            responses.addAll(response);
+
+            return responses;
         }
 
-        if (response.hasSendMessage()) {
-            SendMessage message = response.getSendMessage();
+        if (response.get(response.size() - 1).hasSendMessage()) {
+            SendMessage message = response.get(0).getSendMessage();
             message.setText(
                     message.getText() + "\n\n" + getUserAsString(foundUser));
             message.setReplyMarkup(inlineKeyboardMarkup(admin, foundUser));
-            return new TelegramResponse(message);
+
+            responses.addAll(response);
+
+            return responses;
         }
 
-        return response;
+        responses.addAll(response);
+
+        return responses;
     }
 
-    private TelegramResponse getTelegramResponseWhenUserNotExist(Update update, User user) {
+    private List<TelegramResponse> getTelegramResponseWhenUserNotExist(List<TelegramResponse> responses,
+                                                                       Update update, User user) {
         SendMessage message = new SendMessage();
         message.setText(answerService
                 .get(NOT_FOUND_USER_WITH_SUCH_USERNAME, user.getLanguage()) + update.getMessage().getText());
         message.setChatId(user.getId());
 
-        telegramResponseBlockingQueue.push(new TelegramResponse(message));
+        responses.add(new TelegramResponse(message));
 
-        return super.getMessage(user, update);
+        responses = super.getMessage(responses,user, update);
+
+        return responses;
     }
 
     private String getUserAsString(User user) {

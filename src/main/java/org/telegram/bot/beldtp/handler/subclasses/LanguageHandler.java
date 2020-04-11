@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.Language;
 import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
@@ -17,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @HandlerInfo(type = "language", accessRight = UserRole.USER)
@@ -27,9 +27,6 @@ public class LanguageHandler extends Handler {
 
     @Autowired
     private AnswerService answerService;
-
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
 
     @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
@@ -48,7 +45,7 @@ public class LanguageHandler extends Handler {
 
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
         Language[] languages = Language.values();
 
@@ -69,6 +66,6 @@ public class LanguageHandler extends Handler {
 
         user = userService.save(user);
 
-        return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

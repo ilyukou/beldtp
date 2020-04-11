@@ -6,25 +6,26 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.Video;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 @HandlerInfo(type = "addMedia", accessRight = UserRole.USER)
 public class AddMediaHandler extends Handler {
 
-    private static final String ADDED_MEDIA = "addedMedia";
+    private static final String MEDIA_WAS_ADDED = "mediaWasAdded";
+    private static final String NO_SPACE_FOR_NEW_MEDIA = "noSpaceForNewMedia";
 
     @Autowired
     private UserService userService;
@@ -42,10 +43,37 @@ public class AddMediaHandler extends Handler {
     private BackHandler backHandler;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
+    private DeleteMediaHandler deleteMediaHandler;
 
     @Value("${beldtp.incident.max-media-count}")
     private Integer maxMediaSize;
+
+    @Override
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+        Incident draft = incidentService.getDraft(user);
+
+        if (draft.getMedia() != null && draft.getMedia().size() >= maxMediaSize) {
+            if (user.peekStatus().equals(getType())) {
+                user.popStatus();
+            }
+            user = userService.save(user);
+
+            if (update.hasCallbackQuery()) {
+                responses.add(
+                        new TelegramResponse(
+                                new AnswerCallbackQuery()
+                                        .setCallbackQueryId(update.getCallbackQuery().getId())
+                                        .setText(answerService.get(NO_SPACE_FOR_NEW_MEDIA, user.getLanguage())
+                                                .getText())));
+            }
+
+
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+
+        } else {
+            return super.getMessage(responses, user, update);
+        }
+    }
 
     @Override
     public String getLabel(User user, Update update) {
@@ -68,10 +96,11 @@ public class AddMediaHandler extends Handler {
         }
 
         StringBuilder builder = new StringBuilder();
-
+        builder.append(EmojiUtil.CHECK_MARK_BUTTON);
+        builder.append(" | ");
         if (photoSize > 0 && videoSize > 0) {
-            builder.append(EmojiUtil.FRAMED_PICTURE).append(" ").append(photoSize).append(" ");
-            builder.append(EmojiUtil.VIDEO_CAMERA).append(" ").append(" ").append(videoSize).append(" | ");
+            builder.append(EmojiUtil.FRAMED_PICTURE).append(" ").append(photoSize).append(" | ");
+            builder.append(EmojiUtil.VIDEO_CAMERA).append(" ").append(videoSize).append(" | ");
 
         } else if (photoSize > 0) {
             builder.append(EmojiUtil.FRAMED_PICTURE).append(" ").append(photoSize).append(" | ");
@@ -80,7 +109,7 @@ public class AddMediaHandler extends Handler {
             builder.append(EmojiUtil.VIDEO_CAMERA).append(" ").append(videoSize).append(" | ");
         }
 
-        builder.append(super.getLabel(user, update));
+         builder.append(super.getLabel(user, update));
 
         return builder.toString();
     }
@@ -116,15 +145,15 @@ public class AddMediaHandler extends Handler {
         }
 
         builder.append("\n");
-        builder.append(super.getText(user, update));
+        builder.append(answerService.get(MEDIA_WAS_ADDED, user.getLanguage()).getText());
 
         return builder.toString();
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
-        TelegramResponse transaction = super.transaction(user, update);
+        List<TelegramResponse> transaction = super.transaction(responses, user, update);
 
         if (transaction != null) {
             return transaction;
@@ -141,18 +170,11 @@ public class AddMediaHandler extends Handler {
 
                 user = userService.save(user);
 
-//                telegramResponseBlockingQueue.push( FIXME
-//                        new TelegramResponse(
-//                                new SendMessage()
-//                                        .setChatId(user.getId())
-//                                        .setText("Media size is " + maxMediaSize)
-//                        )
-//                );
-
-                return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+                return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
             }
 
             Media media = new Media();
+            media.setUploadDate(Calendar.getInstance().getTimeInMillis());
 
             if (update.getMessage().hasVideo()) {
                 Video video = update.getMessage().getVideo();
@@ -164,7 +186,7 @@ public class AddMediaHandler extends Handler {
                 List<PhotoSize> list = update.getMessage().getPhoto();
 
                 if(list.size() == 0){
-                    return getMessageWhenMediaHasNotInUpdate(user,update);
+                    throw new BadRequestException();
                 }
 
                 PhotoSize photo = list.get(list.size() - 1); // last photo is best resolution photo
@@ -181,12 +203,18 @@ public class AddMediaHandler extends Handler {
             media = mediaService.save(media);
             draft = incidentService.save(draft);
 
+            if (draft.getMedia().size() == maxMediaSize) {
+                if (user.peekStatus().equals(getType())) {
+                    user.popStatus();
+                }
+            }
+
             user = userService.save(user);
 
-            return getMessageWhenMediaAdd(user, update);
+            return getMessage(responses, user, update);
         }
 
-        return getMessageWhenMediaHasNotInUpdate(user, update);
+        throw new BadRequestException();
     }
 
     private boolean isValid(Update update, Incident draft) {
@@ -194,28 +222,13 @@ public class AddMediaHandler extends Handler {
             return true;
         }
 
-        return draft.getMedia().size() < maxMediaSize;
-    }
-
-    private TelegramResponse getMessageWhenMediaAdd(User user, Update update) {
-        telegramResponseBlockingQueue
-                .push(
-                        new TelegramResponse(
-                                new SendMessage()
-                                        .setText(answerService.get(ADDED_MEDIA, user.getLanguage()).getText())
-                                        .setChatId(user.getId())
-                        )
-                );
-
-        return super.getMessage(user, update);
-    }
-
-    private TelegramResponse getMessageWhenMediaHasNotInUpdate(User user, Update update) {
-        throw new BadRequestException();
+        return draft.getMedia().size() != maxMediaSize
+                || !update.hasMessage()
+                || (!update.getMessage().hasPhoto() && !update.getMessage().hasVideo());
     }
 
     @Override
     public List<Handler> getChild() {
-        return Arrays.asList(backHandler);
+        return Arrays.asList(deleteMediaHandler, backHandler);
     }
 }

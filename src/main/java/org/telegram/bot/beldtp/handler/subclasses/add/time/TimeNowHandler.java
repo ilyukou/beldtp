@@ -3,13 +3,14 @@ package org.telegram.bot.beldtp.handler.subclasses.add.time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
+import org.telegram.bot.beldtp.handler.subclasses.AddHandler;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Calendar;
+import java.util.List;
 
 @HandlerInfo(type = "timeNow", accessRight = UserRole.USER)
 public class TimeNowHandler extends Handler {
@@ -21,10 +22,10 @@ public class TimeNowHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
+    private AddHandler addHandler;
 
     @Override
-    public TelegramResponse getMessage(User user, Update update) {
+    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
 
         Time time = new Time();
 
@@ -38,7 +39,7 @@ public class TimeNowHandler extends Handler {
         time.setHour((byte) calendar.get(Calendar.HOUR_OF_DAY));
         time.setMinute((byte) calendar.get(Calendar.MINUTE));
 
-        if (user.peekStatus().equals(getType())) {
+        while (!user.peekStatus().equals(addHandler.getType())){
             user.popStatus();
         }
 
@@ -47,6 +48,6 @@ public class TimeNowHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 }

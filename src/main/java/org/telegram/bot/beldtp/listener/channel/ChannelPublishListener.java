@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
+import org.telegram.bot.beldtp.BeldtpBot;
 import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.IncidentType;
 import org.telegram.bot.beldtp.model.TelegramResponse;
@@ -26,7 +26,7 @@ public class ChannelPublishListener {
     private ResourcesService resourcesService;
 
     @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
+    private BeldtpBot beldtpBot;
 
     @Scheduled(fixedRate = 10000)
     public void publishIncident() {
@@ -40,7 +40,7 @@ public class ChannelPublishListener {
 
     private void publish(Incident incident) {
 
-        telegramResponseBlockingQueue.push(
+        beldtpBot.executeTelegramResponse(
                 new TelegramResponse(incidentService.getSendMediaGroup(incident).setChatId(url))
         );
 

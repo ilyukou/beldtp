@@ -22,6 +22,8 @@ import java.util.List;
 @HandlerInfo(type = "addLocation", accessRight = UserRole.USER)
 public class AddLocationHandler extends Handler {
 
+    private static final String LOCATION_WAS_ADDED = "locationWasAdded";
+
     @Autowired
     private UserService userService;
 
@@ -57,7 +59,8 @@ public class AddLocationHandler extends Handler {
         Incident draft = incidentService.getDraft(user);
 
         if (draft.getLocation() != null) {
-            return getAnswer(user.getLanguage()).getText() + "\n\n" + draft.getLocation();
+            return answerService.get(LOCATION_WAS_ADDED, user.getLanguage()).getText()
+                    + "\n\n" + draft.getLocation();
         }
 
         return getAnswer(user.getLanguage()).getText();
@@ -75,9 +78,9 @@ public class AddLocationHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
-        TelegramResponse transaction = transaction(user, update);
+        List<TelegramResponse> transaction = transaction(responses, user, update);
 
         if (transaction != null) {
             return transaction;
@@ -99,7 +102,7 @@ public class AddLocationHandler extends Handler {
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return getMessage(user, update);
+            return getMessage(responses, user, update);
         }
 
         throw new BadRequestException();

@@ -5,7 +5,6 @@ import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
-import org.telegram.bot.beldtp.listener.telegramResponse.TelegramResponseBlockingQueue;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
@@ -18,7 +17,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-@HandlerInfo(type = "timeHour", accessRight = UserRole.USER, maxButtonInRow = 5)
+@HandlerInfo(type = "timeHour", accessRight = UserRole.USER, maxButtonInRow = 6)
 public class HourTimeHandler extends Handler {
 
     @Autowired
@@ -33,9 +32,6 @@ public class HourTimeHandler extends Handler {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private TelegramResponseBlockingQueue telegramResponseBlockingQueue;
-
     @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
@@ -44,9 +40,9 @@ public class HourTimeHandler extends Handler {
     }
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
+    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
 
-        TelegramResponse transition = transaction(user, update);
+        List<TelegramResponse> transition = transaction(responses, user, update);
 
         if (transition != null) {
             return transition;
@@ -70,7 +66,7 @@ public class HourTimeHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
     }
 
     private boolean isValid(Update update) {

@@ -21,11 +21,6 @@ public class SettingHandler extends Handler {
     private BackHandler backHandler;
 
     @Override
-    public TelegramResponse handle(User user, Update update) {
-        return transaction(user,update);
-    }
-
-    @Override
     public List<Handler> getChild() {
         return Arrays.asList(languageHandler,backHandler);
     }

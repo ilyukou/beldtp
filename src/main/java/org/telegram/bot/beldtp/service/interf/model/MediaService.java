@@ -10,4 +10,6 @@ public interface MediaService {
     List<Media> get(Long incidentId);
 
     List<Media> getAll();
+
+    void delete(Media media);
 }
