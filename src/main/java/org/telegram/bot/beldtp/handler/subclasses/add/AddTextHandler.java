@@ -13,7 +13,7 @@ import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.MediaService;
+import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -42,7 +42,7 @@ public class AddTextHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private MediaService mediaService;
+    private AttachmentFileService attachmentFileService;
 
     @Autowired
     private AnswerService answerService;

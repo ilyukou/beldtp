@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.model.telegram.api.TelegramFileId;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.MediaService;
+import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
 import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
 import org.telegram.bot.beldtp.service.interf.model.StorageService;
 import org.telegram.bot.beldtp.util.GenerateFileNameUtil;
@@ -20,15 +20,15 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class UploaderMediaToS3Listener {
+public class UploaderAttachmentFileToS3Listener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UploaderMediaToS3Listener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UploaderAttachmentFileToS3Listener.class);
 
     @Value("${bot.token}")
     private String token;
 
     @Autowired
-    private MediaService mediaService;
+    private AttachmentFileService attachmentFileService;
 
     @Autowired
     private ResourcesService amazonS3Service;
@@ -54,16 +54,17 @@ public class UploaderMediaToS3Listener {
 
         for (Incident incident : incidents) {
             try {
-                List<Media> mediaList = mediaService.get(incident.getId());
+                List<AttachmentFile> attachmentFileList = attachmentFileService.get(incident.getId());
 
-                Set<Media> updMedia = new HashSet<>();
+                Set<AttachmentFile> updAttachmentFile = new HashSet<>();
 
-                for (Media media : mediaList) {
+                for (AttachmentFile attachmentFile : attachmentFileList) {
 
-                    if (media.getResource() != null) {
+                    if (attachmentFile.getResource() != null) {
                         break;
                     }
-                    TelegramFileId telegramFileId = get(token, media.getFileId());
+
+                    TelegramFileId telegramFileId = get(token, attachmentFile.getFileId());
 
                     String filename = generateFileNameUtil.generate(telegramFileId.getResult().getFilePath());
 
@@ -75,18 +76,18 @@ public class UploaderMediaToS3Listener {
                     resource = amazonS3Service.save(array, resource);
 
                     resource.setFileName(filename);
-                    resource.setMedia(media);
+                    resource.setAttachmentFile(attachmentFile);
                     resource.setStorage(storageService.get(StorageType.S3));
 
                     resource = resourcesService.save(resource);
 
-                    media.setResource(resource);
-                    media = mediaService.save(media);
+                    attachmentFile.setResource(resource);
+                    attachmentFile = attachmentFileService.save(attachmentFile);
 
-                    updMedia.add(media);
+                    updAttachmentFile.add(attachmentFile);
                 }
 
-                incident.setMedia(updMedia);
+                incident.setAttachmentFiles(updAttachmentFile);
                 incident.setType(IncidentType.READY);
                 incident = incidentService.save(incident);
 

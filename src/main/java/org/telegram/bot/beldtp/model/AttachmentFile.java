@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "media")
-public class Media {
+public class AttachmentFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,7 @@ public class Media {
     @Lob
     private String caption;
 
-    private MediaType mediaType;
+    private AttachmentFileType attachmentFileType;
 
     @ManyToOne
     @JoinColumn(name = "incident_id")
@@ -27,12 +27,12 @@ public class Media {
     @JoinColumn(name = "resources_id")
     private Resource resource;
 
-    public Media() {
+    public AttachmentFile() {
     }
 
-    public Media(String caption, MediaType mediaType, String fileId) {
+    public AttachmentFile(String caption, AttachmentFileType attachmentFileType, String fileId) {
         this.caption = caption;
-        this.mediaType = mediaType;
+        this.attachmentFileType = attachmentFileType;
         this.fileId = fileId;
     }
 
@@ -52,12 +52,12 @@ public class Media {
         this.caption = caption;
     }
 
-    public MediaType getMediaType() {
-        return mediaType;
+    public AttachmentFileType getAttachmentFileType() {
+        return attachmentFileType;
     }
 
-    public void setMediaType(MediaType mediaType) {
-        this.mediaType = mediaType;
+    public void setAttachmentFileType(AttachmentFileType attachmentFileType) {
+        this.attachmentFileType = attachmentFileType;
     }
 
     public Incident getIncident() {

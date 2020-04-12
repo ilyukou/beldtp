@@ -15,7 +15,7 @@ public class Incident {
     private String text;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "incident", orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<Media> media = new HashSet<>();
+    private Set<AttachmentFile> attachmentFiles = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "timeId")
@@ -50,12 +50,12 @@ public class Incident {
         this.text = text;
     }
 
-    public Set<Media> getMedia() {
-        return media;
+    public Set<AttachmentFile> getAttachmentFiles() {
+        return attachmentFiles;
     }
 
-    public void setMedia(Set<Media> media) {
-        this.media = media;
+    public void setAttachmentFiles(Set<AttachmentFile> attachmentFiles) {
+        this.attachmentFiles = attachmentFiles;
     }
 
     public Time getTime() {
@@ -99,11 +99,11 @@ public class Incident {
     }
 
     public boolean hasMedia(){
-        return media != null && media.size() > 0;
+        return attachmentFiles != null && attachmentFiles.size() > 0;
     }
 
-    public void add(Media media){
-        this.media.add(media);
+    public void add(AttachmentFile attachmentFile){
+        this.attachmentFiles.add(attachmentFile);
     }
 
     @Override

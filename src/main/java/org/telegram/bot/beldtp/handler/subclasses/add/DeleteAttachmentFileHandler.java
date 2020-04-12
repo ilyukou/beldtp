@@ -9,7 +9,7 @@ import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.MediaService;
+import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -18,7 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.List;
 
 @HandlerInfo(type = "deleteMedia", accessRight = UserRole.USER)
-public class DeleteMediaHandler extends Handler {
+public class DeleteAttachmentFileHandler extends Handler {
 
     @Autowired
     private UserService userService;
@@ -27,7 +27,7 @@ public class DeleteMediaHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private MediaService mediaService;
+    private AttachmentFileService attachmentFileService;
 
     @Autowired
     private AnswerService answerService;
@@ -40,8 +40,8 @@ public class DeleteMediaHandler extends Handler {
     @Override
     public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
         Incident draft = incidentService.getDraft(user);
-
-        draft.getMedia().clear();
+        int size = draft.getAttachmentFiles().size();
+        draft.getAttachmentFiles().clear();
         draft = incidentService.save(draft);
 
         if (user.peekStatus().equals(getType())) {
@@ -58,6 +58,10 @@ public class DeleteMediaHandler extends Handler {
                                             .setText(getText(user, update))));
         }
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        if(size > 0){
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        }else {
+            return responses;
+        }
     }
 }

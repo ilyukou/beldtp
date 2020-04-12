@@ -10,4 +10,5 @@ public final class EmojiUtil {
     public static final String VIDEO_CAMERA = "\uD83D\uDCF9";
     public static final String MOVIE_CAMERA = "\uD83C\uDFA5";
     public static final String REVERSE_BUTTON = "◀️";
+    public static final String PAGE_FACING_UP = "\uD83D\uDCC4";
 }

@@ -3,7 +3,7 @@ package org.telegram.bot.beldtp.handler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.bot.beldtp.exception.BadRequestException;
-import org.telegram.bot.beldtp.exception.MediaSizeException;
+import org.telegram.bot.beldtp.exception.AttachmentFileSizeException;
 import org.telegram.bot.beldtp.exception.TextSizeException;
 import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
 import org.telegram.bot.beldtp.model.TelegramResponse;
@@ -56,7 +56,7 @@ public class UpdateHandler {
                             .handle(new LinkedList<>(),user, update);
                 }
             }
-        } catch (BadRequestException | MediaSizeException | TextSizeException e) {
+        } catch (BadRequestException | AttachmentFileSizeException | TextSizeException e) {
             response = null;
 
         } catch (Exception e) { // any other Exception throw from Handlers

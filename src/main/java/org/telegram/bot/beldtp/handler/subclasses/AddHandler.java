@@ -21,7 +21,7 @@ public class AddHandler extends Handler {
     private static final byte OPTION_BUTTON_IN_ROW_SIZE = 1;
 
     @Autowired
-    private AddMediaHandler addMediaHandler;
+    private AddAttachmentFileHandler addAttachmentFileHandler;
 
     @Autowired
     private AddTextHandler addTextHandler;
@@ -63,7 +63,7 @@ public class AddHandler extends Handler {
     }
 
     private List<Handler> getAddOption() {
-        return Arrays.asList(addMediaHandler, addTextHandler,
+        return Arrays.asList(addAttachmentFileHandler, addTextHandler,
                 addLocationHandler, addTimeHandler);
     }
 

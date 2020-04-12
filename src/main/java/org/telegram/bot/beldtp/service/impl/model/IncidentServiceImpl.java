@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.repository.interf.IncidentRepository;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.MediaService;
 import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
@@ -17,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class IncidentServiceImpl implements IncidentService {
@@ -76,9 +76,9 @@ public class IncidentServiceImpl implements IncidentService {
                 text.append(incident.getText()).append("\n\n");
             }
 
-            for (Media media : incident.getMedia()){
-                if(media.getCaption() != null){
-                    text.append(media.getCaption()).append("\n");
+            for (AttachmentFile attachmentFile : incident.getAttachmentFiles()){
+                if(attachmentFile.getCaption() != null){
+                    text.append(attachmentFile.getCaption()).append("\n");
                 }
             }
 
@@ -105,11 +105,11 @@ public class IncidentServiceImpl implements IncidentService {
     private List<InputMedia> convert(Incident incident) {
         List<InputMedia> inputMediaList = new LinkedList<>();
 
-        if (incident.getMedia() != null && incident.getMedia().size() > 0) {
-            incident.getMedia()
+        if (incident.getAttachmentFiles() != null && incident.getAttachmentFiles().size() > 0) {
+            incident.getAttachmentFiles()
                     .forEach(media -> {
 
-                        if (media.getMediaType() == MediaType.PHOTO) {
+                        if (media.getAttachmentFileType() == AttachmentFileType.PHOTO) {
                             InputMedia inputMedia = new InputMediaPhoto(null, media.getCaption());
                             InputStream stream = new ByteArrayInputStream(resourcesService.get(media.getResource()));
                             inputMedia.setMedia(stream, media.getResource().getFileName());
@@ -121,7 +121,7 @@ public class IncidentServiceImpl implements IncidentService {
                             inputMediaList.add(inputMedia);
                         }
 
-                        if (media.getMediaType() == MediaType.VIDEO) {
+                        if (media.getAttachmentFileType() == AttachmentFileType.VIDEO) {
                             InputMedia inputMedia = new InputMediaVideo(null, media.getCaption());
                             InputStream stream = new ByteArrayInputStream(resourcesService.get(media.getResource()));
                             inputMedia.setMedia(stream, media.getResource().getFileName());
@@ -140,5 +140,55 @@ public class IncidentServiceImpl implements IncidentService {
     @Override
     public long size(IncidentType incidentType) {
         return incidentRepository.size(incidentType);
+    }
+
+    @Override
+    public List<AttachmentFile> getNotMediaAttachmentFile(Incident incident) {
+        if(incident == null || incident.getAttachmentFiles() == null){
+            return new LinkedList<>();
+        }
+
+        return incident.getAttachmentFiles().stream()
+                .filter(attachmentFile
+                        -> !(attachmentFile.getAttachmentFileType().equals(AttachmentFileType.PHOTO)
+                        || attachmentFile.getAttachmentFileType().equals(AttachmentFileType.VIDEO)))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttachmentFile> getMedia(Incident incident) {
+        if(incident == null || incident.getAttachmentFiles() == null){
+            return new LinkedList<>();
+        }
+
+        return incident.getAttachmentFiles().stream()
+                .filter(attachmentFile
+                        -> attachmentFile.getAttachmentFileType().equals(AttachmentFileType.PHOTO)
+                        || attachmentFile.getAttachmentFileType().equals(AttachmentFileType.VIDEO))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttachmentFile> getPhoto(Incident incident) {
+        if(incident == null || incident.getAttachmentFiles() == null){
+            return new LinkedList<>();
+        }
+
+        return incident.getAttachmentFiles().stream()
+                .filter(attachmentFile
+                        -> attachmentFile.getAttachmentFileType().equals(AttachmentFileType.PHOTO))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AttachmentFile> getVideo(Incident incident) {
+        if(incident == null || incident.getAttachmentFiles() == null){
+            return new LinkedList<>();
+        }
+
+        return incident.getAttachmentFiles().stream()
+                .filter(attachmentFile
+                        -> attachmentFile.getAttachmentFileType().equals(AttachmentFileType.VIDEO))
+                .collect(Collectors.toList());
     }
 }

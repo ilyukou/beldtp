@@ -22,13 +22,13 @@ public class ConfirmAddHandler extends Handler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfirmAddHandler.class);
 
-    private static final String REQUIRED_MIN_ONE_MEDIA = "requiredMinOneMedia";
+    private static final String REQUIRED_MIN_ONE_MEDIA = "requiredMinOneAttachmentFile";
     private static final String REQUIRED_TEXT = "requiredText";
     private static final String REQUIRED_LOCATION = "requiredLocation";
     private static final String REQUIRED_TIME = "requiredTime";
     private static final String YOU_INCIDENT_BUILD = "youIncidentBuild";
 
-    private static final String MEDIA_WAS_OLD = "mediaWasOld";
+    private static final String MEDIA_WAS_OLD = "attachmentFileWasOld";
     private static final double HOUR_WHEN_MEDIA_SET_OLD = 20;
     private static final long HOUR_IN_MILLIS = 3600000;
 
@@ -77,7 +77,7 @@ public class ConfirmAddHandler extends Handler {
             return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
         }
 
-        if (draft.getMedia() == null || draft.getMedia().size() == 0) {
+        if (draft.getAttachmentFiles() == null || draft.getAttachmentFiles().size() == 0) {
             user = removeThisHandler(user);
 
             responses.add(getAnswerCallbackQuery(answerService
@@ -86,9 +86,9 @@ public class ConfirmAddHandler extends Handler {
         }
 
         long nowDate = Calendar.getInstance().getTimeInMillis();
-        for (Media media : draft.getMedia()){
-            if(nowDate - HOUR_IN_MILLIS * HOUR_WHEN_MEDIA_SET_OLD > media.getUploadDate()){
-                draft.getMedia().clear();
+        for (AttachmentFile attachmentFile : draft.getAttachmentFiles()){
+            if(nowDate - HOUR_IN_MILLIS * HOUR_WHEN_MEDIA_SET_OLD > attachmentFile.getUploadDate()){
+                draft.getAttachmentFiles().clear();
                 draft = incidentService.save(draft);
 
                 responses.add(getAnswerCallbackQuery(answerService

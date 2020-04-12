@@ -11,7 +11,7 @@ public class Resource {
     private Long id;
 
     @OneToOne(mappedBy = "resource")
-    private Media media;
+    private AttachmentFile attachmentFile;
 
     @ManyToOne
     @JoinColumn(name = "storage_id", nullable = false)
@@ -35,12 +35,12 @@ public class Resource {
         this.id = id;
     }
 
-    public Media getMedia() {
-        return media;
+    public AttachmentFile getAttachmentFile() {
+        return attachmentFile;
     }
 
-    public void setMedia(Media media) {
-        this.media = media;
+    public void setAttachmentFile(AttachmentFile attachmentFile) {
+        this.attachmentFile = attachmentFile;
     }
 
     public Storage getStorage() {

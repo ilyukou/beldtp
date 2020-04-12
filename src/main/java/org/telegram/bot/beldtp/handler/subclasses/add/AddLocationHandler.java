@@ -11,7 +11,7 @@ import org.telegram.bot.beldtp.repository.interf.LocationRepository;
 import org.telegram.bot.beldtp.service.interf.GeoCoderService;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.MediaService;
+import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -31,7 +31,7 @@ public class AddLocationHandler extends Handler {
     private IncidentService incidentService;
 
     @Autowired
-    private MediaService mediaService;
+    private AttachmentFileService attachmentFileService;
 
     @Autowired
     private AnswerService answerService;
