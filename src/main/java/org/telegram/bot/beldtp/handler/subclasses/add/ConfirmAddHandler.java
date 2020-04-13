@@ -14,6 +14,7 @@ import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -50,8 +51,8 @@ public class ConfirmAddHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
-        return handle(responses, user, update);
+    public List<TelegramResponse> getMessage(User user, Update update) {
+        return handle(user, update);
     }
 
     private User removeThisHandler(User user){
@@ -65,7 +66,7 @@ public class ConfirmAddHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
         if (!update.hasCallbackQuery() || draft == null) {
@@ -74,8 +75,9 @@ public class ConfirmAddHandler extends Handler {
                 user = userService.save(user);
             }
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }
+        List<TelegramResponse> responses = new ArrayList<>();
 
         if (draft.getAttachmentFiles() == null || draft.getAttachmentFiles().size() == 0) {
             user = removeThisHandler(user);
@@ -96,7 +98,8 @@ public class ConfirmAddHandler extends Handler {
 
                 user = removeThisHandler(user);
 
-                return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+                responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
+                return responses;
             }
         }
 
@@ -142,7 +145,7 @@ public class ConfirmAddHandler extends Handler {
         responses.add(getAnswerCallbackQuery(answerService
                 .get(YOU_INCIDENT_BUILD, user.getLanguage()).getText(), user, update));
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     private TelegramResponse getAnswerCallbackQuery(String text, User user, Update update) {

@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,15 +36,15 @@ public class UserProfileHandler extends Handler {
     private ChangeUserRoleHandler changeUserRoleHandler;
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        List<TelegramResponse> transaction = transaction(responses, user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        List<TelegramResponse> transaction = transaction(user, update);
 
         if (transaction != null) {
             return transaction;
         }
 
         if (update.hasCallbackQuery()) {
-            return changeUserRoleHandler.handle(responses, user, update);
+            return changeUserRoleHandler.handle(user, update);
         }
 
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -51,18 +52,17 @@ public class UserProfileHandler extends Handler {
             User foundUser = userService.get(update.getMessage().getText());
 
             if (foundUser == null) {
-                return getTelegramResponseWhenUserNotExist(responses, update, user);
+                return getTelegramResponseWhenUserNotExist(update, user);
             } else {
-                return getMessageWhenUserFound(responses, update, user, foundUser);
+                return getMessageWhenUserFound(update, user, foundUser);
             }
         } else {
             throw new BadRequestException();
         }
     }
 
-    private List<TelegramResponse> getMessageWhenUserFound(List<TelegramResponse> responses,
-                                                           Update update, User admin, User foundUser) {
-        List<TelegramResponse> response = super.getMessage(new LinkedList<>(), admin, update);
+    private List<TelegramResponse> getMessageWhenUserFound(Update update, User admin, User foundUser) {
+        List<TelegramResponse> response = super.getMessage(admin, update);
 
         if (response.get(response.size() - 1).hasEditMessageText()) {
             EditMessageText message = response.get(0).getEditMessageText();
@@ -71,9 +71,7 @@ public class UserProfileHandler extends Handler {
                             message.getText() + "\n\n" + getUserAsString(foundUser));
             message.setReplyMarkup(inlineKeyboardMarkup(admin, foundUser));
 
-            responses.addAll(response);
-
-            return responses;
+            return response;
         }
 
         if (response.get(response.size() - 1).hasSendMessage()) {
@@ -82,26 +80,22 @@ public class UserProfileHandler extends Handler {
                     message.getText() + "\n\n" + getUserAsString(foundUser));
             message.setReplyMarkup(inlineKeyboardMarkup(admin, foundUser));
 
-            responses.addAll(response);
-
-            return responses;
+            return response;
         }
 
-        responses.addAll(response);
-
-        return responses;
+        return response;
     }
 
-    private List<TelegramResponse> getTelegramResponseWhenUserNotExist(List<TelegramResponse> responses,
-                                                                       Update update, User user) {
+    private List<TelegramResponse> getTelegramResponseWhenUserNotExist(Update update, User user) {
         SendMessage message = new SendMessage();
         message.setText(answerService
                 .get(NOT_FOUND_USER_WITH_SUCH_USERNAME, user.getLanguage()) + update.getMessage().getText());
         message.setChatId(user.getId());
 
+        List<TelegramResponse> responses = new ArrayList<>();
         responses.add(new TelegramResponse(message));
 
-        responses = super.getMessage(responses,user, update);
+        responses.addAll(super.getMessage(user, update));
 
         return responses;
     }

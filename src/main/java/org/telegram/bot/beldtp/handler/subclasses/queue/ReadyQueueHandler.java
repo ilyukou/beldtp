@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class ReadyQueueHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         List<Incident> incidents = incidentService.get(READY_INCIDENT_TYPE);
 
         if (incidents == null || incidents.size() == 0) {
@@ -56,24 +57,21 @@ public class ReadyQueueHandler extends Handler {
             }
             user = userService.save(user);
 
-            responses.add(new TelegramResponse(new AnswerCallbackQuery()
+
+            return Arrays.asList(new TelegramResponse(new AnswerCallbackQuery()
                     .setText(answerService.get(NOT_READY_INCIDENT, user.getLanguage()).getText())
                     .setCallbackQueryId(update.getCallbackQuery().getId())));
-            return responses;
         }
 
         SendMediaGroup sendMediaGroup = incidentService.getSendMediaGroup(incidents.get(0));
         sendMediaGroup.setChatId(user.getId());
-
-        responses.add(new TelegramResponse(sendMediaGroup));
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(user.getId());
         sendMessage.setText(getAnswer(user.getLanguage()).getText());
         sendMessage.setReplyMarkup(getReplyMarkup(incidents.get(0), user));
 
-        responses.add(new TelegramResponse(sendMessage));
-        return responses;
+        return Arrays.asList(new TelegramResponse(sendMediaGroup),new TelegramResponse(sendMessage));
     }
 
     private InlineKeyboardMarkup getReplyMarkup(Incident incident, User user) {
@@ -97,8 +95,8 @@ public class ReadyQueueHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        List<TelegramResponse> transition = transaction(responses, user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        List<TelegramResponse> transition = transaction(user, update);
 
         if (transition != null) {
             return transition;
@@ -136,6 +134,6 @@ public class ReadyQueueHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 }

@@ -24,7 +24,7 @@ public class BackHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
 
         if (user.peekStatus().equals(getType())) {
             user.popStatus(); // pop back
@@ -34,11 +34,11 @@ public class BackHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        return getMessage(responses, user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        return getMessage(user, update);
     }
 }

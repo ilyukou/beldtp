@@ -11,6 +11,7 @@ import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class TimeYesterdayHandler extends Handler {
     private DayTimeHandler timeDayLogicComponent;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         Time time = new Time();
         Incident incident = incidentService.getDraft(user);
 
@@ -62,7 +63,7 @@ public class TimeYesterdayHandler extends Handler {
 
 
         }
-
+        List<TelegramResponse> responses = new ArrayList<>();
         if(update.hasCallbackQuery()){
             responses.add(
                     new TelegramResponse(new AnswerCallbackQuery()
@@ -77,6 +78,7 @@ public class TimeYesterdayHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
+        return responses;
     }
 }

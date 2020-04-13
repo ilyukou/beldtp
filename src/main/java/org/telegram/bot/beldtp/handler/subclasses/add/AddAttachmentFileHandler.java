@@ -16,6 +16,7 @@ import org.telegram.bot.beldtp.util.AttachmentFileUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class AddAttachmentFileHandler extends Handler {
     private Integer maxMediaSize;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
         if (draft.getAttachmentFiles() != null && draft.getAttachmentFiles().size() > maxMediaSize) {
@@ -64,6 +65,7 @@ public class AddAttachmentFileHandler extends Handler {
             }
             user = userService.save(user);
 
+            List<TelegramResponse> responses = new ArrayList<>();
             if (update.hasCallbackQuery()) {
                 responses.add(
                         new TelegramResponse(
@@ -74,10 +76,11 @@ public class AddAttachmentFileHandler extends Handler {
             }
 
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
 
+            return responses;
         } else {
-            return super.getMessage(responses, user, update);
+            return super.getMessage(user, update);
         }
     }
 
@@ -176,9 +179,9 @@ public class AddAttachmentFileHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
-        List<TelegramResponse> transaction = super.transaction(responses, user, update);
+        List<TelegramResponse> transaction = super.transaction(user, update);
 
         if (transaction != null) {
             return transaction;
@@ -197,7 +200,7 @@ public class AddAttachmentFileHandler extends Handler {
 
             user = userService.save(user);
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }
 
         AttachmentFile attachmentFile = attachmentFileUtil.getFromUpdate(update);
@@ -218,7 +221,7 @@ public class AddAttachmentFileHandler extends Handler {
 
         user = userService.save(user);
 
-        return getMessage(responses, user, update);
+        return getMessage(user, update);
     }
 
     private boolean isValid(Update update, Incident draft) {

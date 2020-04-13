@@ -78,9 +78,9 @@ public class AddLocationHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
-        List<TelegramResponse> transaction = transaction(responses, user, update);
+        List<TelegramResponse> transaction = transaction(user, update);
 
         if (transaction != null) {
             return transaction;
@@ -102,7 +102,7 @@ public class AddLocationHandler extends Handler {
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return getMessage(responses, user, update);
+            return getMessage(user, update);
         }
 
         throw new BadRequestException();

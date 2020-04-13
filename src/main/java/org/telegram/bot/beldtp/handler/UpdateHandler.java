@@ -40,12 +40,12 @@ public class UpdateHandler {
         try {
             // Get message for new user
             if (user == null ) {
-                response = startHandler.getMessage(new LinkedList<>(),null, update);
+                response = startHandler.getMessage(null, update);
 
             } else {
                 // Not new user and update has entity
                 if(messageEntityHandler.isUpdateHasMessageEntity(update)){
-                    response = messageEntityHandler.getMessage(new LinkedList<>(),user,update);
+                    response = messageEntityHandler.getMessage(user,update);
                 }
 
                 // Not new user and update hasn't entity
@@ -53,7 +53,7 @@ public class UpdateHandler {
                     user = userService.update(user, update);
                     response = startHandler
                             .getHandlerByStatus(user.peekStatus()) // Get handler by User Status
-                            .handle(new LinkedList<>(),user, update);
+                            .handle(user, update);
                 }
             }
         } catch (BadRequestException | AttachmentFileSizeException | TextSizeException e) {
@@ -64,7 +64,7 @@ public class UpdateHandler {
         }
 
         if (response == null) {
-            response = exceptionHandler.getMessage(new LinkedList<>(),userService.get(UpdateUtil.getChatId(update)), update);
+            response = exceptionHandler.getMessage(userService.get(UpdateUtil.getChatId(update)), update);
         }
 
         return response;

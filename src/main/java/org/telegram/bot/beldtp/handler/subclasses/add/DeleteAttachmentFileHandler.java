@@ -15,6 +15,7 @@ import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @HandlerInfo(type = "deleteMedia", accessRight = UserRole.USER)
@@ -38,7 +39,7 @@ public class DeleteAttachmentFileHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
         int size = draft.getAttachmentFiles().size();
         draft.getAttachmentFiles().clear();
@@ -50,6 +51,7 @@ public class DeleteAttachmentFileHandler extends Handler {
 
         user = userService.save(user);
 
+        List<TelegramResponse> responses = new ArrayList<>();
         if (update.hasCallbackQuery()) {
             responses.add(
                             new TelegramResponse(
@@ -58,10 +60,11 @@ public class DeleteAttachmentFileHandler extends Handler {
                                             .setText(getText(user, update))));
         }
 
-        if(size > 0){
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
-        }else {
-            return responses;
+        if(size > 0){ // if Size more than 1 - > EditMessageText
+           responses.addAll(
+                   super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
         }
+
+        return responses;
     }
 }

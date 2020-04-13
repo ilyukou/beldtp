@@ -74,9 +74,9 @@ public class AddTextHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
-        List<TelegramResponse> transaction = transaction(responses, user, update);
+        List<TelegramResponse> transaction = transaction(user, update);
 
         if (transaction != null) {
             return transaction;
@@ -95,15 +95,13 @@ public class AddTextHandler extends Handler {
             draft = incidentService.save(draft);
             user = userService.save(user);
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }
 
-        responses.add( new TelegramResponse(
+        return Arrays.asList(new TelegramResponse(
                 new AnswerCallbackQuery()
                         .setText(answerService.get(REQUIRED_TEXT, user.getLanguage()).getText())
-                        .setCallbackQueryId(update.getCallbackQuery().getId()))
-        );
-        return responses;
+                        .setCallbackQueryId(update.getCallbackQuery().getId())));
     }
 
     private boolean isValid(Update update) {

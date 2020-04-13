@@ -23,7 +23,7 @@ public class TimeSelectHandler extends Handler {
     private YearTimeHandler timeYearLogicComponent;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
 
         if(getType().equals(user.peekStatus())){
             user.popStatus();
@@ -32,13 +32,6 @@ public class TimeSelectHandler extends Handler {
         user.pushStatus(timeYearLogicComponent.getType());
         user = userService.save(user);
 
-        if(update.hasCallbackQuery()){
-            responses.add(
-                    new TelegramResponse(new AnswerCallbackQuery()
-                            .setCallbackQueryId(update.getCallbackQuery().getId()))
-            );
-        }
-
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 }

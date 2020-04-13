@@ -15,10 +15,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-@HandlerInfo(type = "add", accessRight = UserRole.USER, maxButtonInRow = 2)
+@HandlerInfo(type = "add", accessRight = UserRole.USER)
 public class AddHandler extends Handler {
 
-    private static final byte OPTION_BUTTON_IN_ROW_SIZE = 1;
+    private static final byte OPTION_BUTTON_IN_ROW_SIZE = 2;
 
     @Autowired
     private AddAttachmentFileHandler addAttachmentFileHandler;
@@ -44,12 +44,12 @@ public class AddHandler extends Handler {
         List<List<InlineKeyboardButton>> buttons = InlineKeyboardMarkupUtil
                 .getKeyboard(
                         InlineKeyboardMarkupUtil.convert(getAddOption(), user, update),
-                        OPTION_BUTTON_IN_ROW_SIZE);
+                        getMaxButtonInRow());
 
         buttons.addAll(InlineKeyboardMarkupUtil
                 .getKeyboard(
                         InlineKeyboardMarkupUtil.convert(getMethods(), user, update),
-                        getMaxButtonInRow()));
+                        OPTION_BUTTON_IN_ROW_SIZE));
 
         return new InlineKeyboardMarkup().setKeyboard(buttons);
     }

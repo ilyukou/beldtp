@@ -1,4 +1,4 @@
-package org.telegram.bot.beldtp.listener.channel;
+package org.telegram.bot.beldtp.listener;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +16,8 @@ import java.util.List;
 @Component
 public class ChannelPublishListener {
 
+    private static final long REPEAT_TIME = 10000;
+
     @Value("${bot.channel.username}")
     private String url;
 
@@ -28,7 +30,7 @@ public class ChannelPublishListener {
     @Autowired
     private BeldtpBot beldtpBot;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = REPEAT_TIME)
     public void publishIncident() {
 
         List<Incident> incidents = incidentService.get(IncidentType.VERIFY);

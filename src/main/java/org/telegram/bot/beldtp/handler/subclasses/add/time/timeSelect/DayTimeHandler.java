@@ -12,6 +12,7 @@ import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.TimeService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.util.InlineKeyboardMarkupUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -55,12 +56,12 @@ public class DayTimeHandler extends Handler {
 
         return getDayOfMonth(
                 incident.getTime().getMonth(),
-                incident.getTime().getYear(), user.getLanguage());
+                incident.getTime().getYear(), user, update);
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        List<TelegramResponse> transition = transaction(responses, user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        List<TelegramResponse> transition = transaction( user, update);
 
         if (transition != null) {
             return transition;
@@ -92,7 +93,7 @@ public class DayTimeHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     private boolean isValid(Update update) {
@@ -114,9 +115,7 @@ public class DayTimeHandler extends Handler {
     }
 
 
-    private InlineKeyboardMarkup getDayOfMonth(int monthId, int year, Language language) {
-
-        List<List<InlineKeyboardButton>> buttons = new LinkedList<>();
+    private InlineKeyboardMarkup getDayOfMonth(int monthId, int year, User user, Update update) {
 
         Calendar calendar = Calendar.getInstance();
 
@@ -134,30 +133,11 @@ public class DayTimeHandler extends Handler {
 
         for (int i = 0; i < days; i++) {
             row.add(
-                    getButtonForDay(monthId, year, i + 1, language)
+                    getButtonForDay(monthId, year, i + 1, user.getLanguage())
             );
-            if (row.size() == getMaxButtonInRow()) {
-                buttons.add(row);
-                row = new LinkedList<>();
-
-                if (i + 1 == days) {
-                    break;
-                }
-            }
-
-            if (i + 1 == days) {
-                buttons.add(row);
-                row = new LinkedList<>();
-            }
         }
 
-        buttons.add(
-                Arrays.asList(new InlineKeyboardButton()
-                        .setText(backHandler.getAnswer(language).getLabel())
-                        .setCallbackData(backHandler.getAnswer(language).getType()))
-        );
-
-        return new InlineKeyboardMarkup().setKeyboard(buttons);
+        return InlineKeyboardMarkupUtil.getMarkup(row, getChild(), user, update, getMaxButtonInRow());
     }
 
 

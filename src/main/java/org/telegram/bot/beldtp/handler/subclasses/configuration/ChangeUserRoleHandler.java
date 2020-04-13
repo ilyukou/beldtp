@@ -11,6 +11,7 @@ import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @HandlerInfo(type = "changeUserRole", accessRight = UserRole.USER)
@@ -25,20 +26,19 @@ public class ChangeUserRoleHandler extends Handler {
     @Autowired
     private UserService userService;
 
-    private List<TelegramResponse> removeFromHandler(List<TelegramResponse> responses,
-                                                     User user, Update update) {
+    private List<TelegramResponse> removeFromHandler(User user, Update update) {
         if (user.peekStatus().equals(getType())) {
             user.popStatus();
         }
         user = userService.save(user);
 
-        return super.getMessage(responses, user, update);
+        return super.getMessage(user, update);
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
         if (!update.hasCallbackQuery() || !update.getCallbackQuery().getData().contains("-")) {
-            return removeFromHandler(responses,user, update);
+            return removeFromHandler(user, update);
         }
 
         String data = update.getCallbackQuery().getData();
@@ -48,8 +48,10 @@ public class ChangeUserRoleHandler extends Handler {
         User foundUser = userService.get(id);
 
         if (foundUser == null) {
-            return removeFromHandler(responses, user, update);
+            return removeFromHandler(user, update);
         }
+
+        List<TelegramResponse> responses = new LinkedList<>();
 
         if (foundUser.getId().equals(user.getId())) {
             responses.add(
@@ -60,7 +62,7 @@ public class ChangeUserRoleHandler extends Handler {
                                             .get(YOU_CANNOT_CHANGE_YOURE_ROLE, user.getLanguage()).getText())
                     ));
 
-            return removeFromHandler(responses, user, update);
+            responses.addAll(removeFromHandler(user, update));
         }
 
         for (UserRole role : UserRole.values()) {
@@ -78,6 +80,7 @@ public class ChangeUserRoleHandler extends Handler {
             }
         }
 
-        return removeFromHandler(responses, user, update);
+        responses.addAll(removeFromHandler(user, update));
+        return responses;
     }
 }

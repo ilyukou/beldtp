@@ -45,7 +45,7 @@ public class LanguageHandler extends Handler {
 
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
         Language[] languages = Language.values();
 
@@ -66,6 +66,6 @@ public class LanguageHandler extends Handler {
 
         user = userService.save(user);
 
-        return getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 }

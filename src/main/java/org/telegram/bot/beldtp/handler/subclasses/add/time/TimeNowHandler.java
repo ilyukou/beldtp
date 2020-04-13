@@ -25,7 +25,7 @@ public class TimeNowHandler extends Handler {
     private AddHandler addHandler;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage( User user, Update update) {
 
         Time time = new Time();
 
@@ -48,6 +48,6 @@ public class TimeNowHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 }

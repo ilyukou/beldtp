@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,7 +49,7 @@ public abstract class Handler {
                         getMaxButtonInRow());
     }
 
-    public List<TelegramResponse> getSendMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getSendMessage(User user, Update update) {
         SendMessage sendMessage = new SendMessage();
 
         sendMessage.setChatId(user.getId());
@@ -56,11 +57,10 @@ public abstract class Handler {
         sendMessage.setReplyMarkup(getInlineKeyboardMarkup(user, update));
         sendMessage.setParseMode(getParseMode(user, update));
 
-        responses.add(new TelegramResponse(sendMessage));
-        return responses;
+        return Arrays.asList(new TelegramResponse(sendMessage));
     }
 
-    public List<TelegramResponse> getEditMessageText(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getEditMessageText(User user, Update update) {
         EditMessageText editMessageText = new EditMessageText();
 
         editMessageText.setChatId(user.getId());
@@ -71,21 +71,20 @@ public abstract class Handler {
         editMessageText.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
         editMessageText.setParseMode(getParseMode(user, update));
 
-        responses.add(new TelegramResponse(editMessageText,update));
-        return responses;
+        return Arrays.asList(new TelegramResponse(editMessageText, update));
     }
 
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
 
         if (user.getLanguage() == null) { // FIXME - add default language for user which not has language
             user.setLanguage(Language.BE);
         }
 
         if (update.hasCallbackQuery()) {
-            return getEditMessageText(responses,user, update);
+            return getEditMessageText(user, update);
         }
 
-        return getSendMessage(responses,user, update);
+        return getSendMessage(user, update);
     }
 
     public String getText(User user, Update update) {
@@ -100,11 +99,11 @@ public abstract class Handler {
         return ParseMode.MARKDOWN;
     }
 
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        return transaction(responses,user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        return transaction(user, update);
     }
 
-    public List<TelegramResponse> transaction(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> transaction(User user, Update update) {
 
         if (update.hasCallbackQuery()) {
             for (Handler handler : getAvailableHandlerForUser(user.getRole())) {
@@ -114,7 +113,7 @@ public abstract class Handler {
 
                     user = userService.save(user);
 
-                    return getHandlerByStatus(user.peekStatus()).getMessage(responses,user, update);
+                    return getHandlerByStatus(user.peekStatus()).getMessage(user, update);
                 }
             }
         }

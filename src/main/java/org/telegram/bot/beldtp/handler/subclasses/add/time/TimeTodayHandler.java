@@ -24,7 +24,7 @@ public class TimeTodayHandler extends Handler {
     private HourTimeHandler timeHourLogicComponent;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
 
         Time time = new Time();
         Incident incident = incidentService.getDraft(user);
@@ -45,6 +45,6 @@ public class TimeTodayHandler extends Handler {
         incident.setTime(time);
         incident = incidentService.save(incident);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 }

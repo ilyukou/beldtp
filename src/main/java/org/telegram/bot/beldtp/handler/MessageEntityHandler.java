@@ -34,18 +34,18 @@ public class MessageEntityHandler extends Handler {
     private StartHandler startHandler;
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
 
         if(update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST).getType()
                 .equals(BOT_COMMAND_MESSAGE_ENTITY_TYPE)){
-            return getMessageToCommand(responses, update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST),
+            return getMessageToCommand(update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST),
                     user, update);
         }
 
         return null;
     }
 
-    private List<TelegramResponse> getMessageToCommand(List<TelegramResponse> responses,MessageEntity messageEntity,
+    private List<TelegramResponse> getMessageToCommand(MessageEntity messageEntity,
                                                        User user, Update update){
 
         if(messageEntity.getText().equals(START_COMMAND)){
@@ -60,7 +60,7 @@ public class MessageEntityHandler extends Handler {
                 incidentService.delete(draft);
             }
 
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }
 
         return null;

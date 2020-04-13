@@ -40,9 +40,9 @@ public class HourTimeHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
-        List<TelegramResponse> transition = transaction(responses, user, update);
+        List<TelegramResponse> transition = transaction(user, update);
 
         if (transition != null) {
             return transition;
@@ -66,7 +66,7 @@ public class HourTimeHandler extends Handler {
 
         user = userService.save(user);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     private boolean isValid(Update update) {

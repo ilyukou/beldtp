@@ -32,7 +32,7 @@ public class BackAndRejectIncidentHandler extends Handler {
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
 
@@ -45,11 +45,11 @@ public class BackAndRejectIncidentHandler extends Handler {
 
         incidentService.delete(draft);
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user, update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
-        return getMessage(responses, user, update);
+    public List<TelegramResponse> handle(User user, Update update) {
+        return getMessage(user, update);
     }
 }

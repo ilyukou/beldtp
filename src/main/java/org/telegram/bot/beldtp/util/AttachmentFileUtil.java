@@ -82,14 +82,19 @@ public class AttachmentFileUtil {
     }
 
     public static AttachmentFileType getFromDocumentAttachmentFileType(Document document){
-        // [0] - filename ; [1] - file extension
-        String[] arr = document.getFileName().split("\\.");
 
-        if(arr.length != 2){
+        StringBuilder builder = new StringBuilder(document.getFileName());
+        builder = builder.reverse();
+
+        // [0] - file extension ; [1] - filename
+        String[] arr = builder.toString().split("\\.");
+
+        if(arr.length < 2){
             return null;
         }
 
-        String fileExtension = arr[1];
+        // gpj => jpg
+        String fileExtension = new StringBuilder(arr[0]).reverse().toString();
 
         for (AttachmentFileType type : AttachmentFileType.values()){
             if(type.getFileExtension().equals(fileExtension) // check equals file extension

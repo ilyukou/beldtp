@@ -12,6 +12,7 @@ import org.telegram.bot.beldtp.util.UpdateUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -27,7 +28,7 @@ public class StartHandler extends Handler {
     @Autowired
     private MainHandler mainHandler;
 
-    private List<TelegramResponse> addStartMessage(List<TelegramResponse> responses, User user, Update update){
+    private TelegramResponse addStartMessage(User user, Update update){
         Language language = Language.BE;
 
         // If user has language set user language
@@ -35,25 +36,22 @@ public class StartHandler extends Handler {
             language = user.getLanguage();
         }
 
-        responses.add(
-                new TelegramResponse(
-                        new SendMessage()
-                                .setChatId(UpdateUtil.getChatId(update))
-                                .setText(getAnswer(language).getText())
-                )
+        return new TelegramResponse(
+                new SendMessage()
+                        .setChatId(UpdateUtil.getChatId(update))
+                        .setText(getAnswer(language).getText())
         );
-
-        return responses;
     }
 
     @Override
-    public List<TelegramResponse> getMessage(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> getMessage(User user, Update update) {
         // User is complete all registration
         if(user != null && user.getLanguage() != null && user.getStatus() != null){
-            return handle(responses, user,update);
+            return handle(user,update);
         }
 
-        responses = addStartMessage(responses, user,update);
+        List<TelegramResponse> responses = new ArrayList<>();
+        responses.add(addStartMessage(user,update));
 
         Stack<String> stack = new Stack<>();
         stack.push(getType());
@@ -70,11 +68,12 @@ public class StartHandler extends Handler {
 
         user.setStatus(stack);
         user = userService.save(user);
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses,user,update);
+        responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user,update));
+        return responses;
     }
 
     @Override
-    public List<TelegramResponse> handle(List<TelegramResponse> responses, User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
 
         if (user.getLanguage() != null){
             user.pushStatus(mainHandler.getType());
@@ -90,6 +89,6 @@ public class StartHandler extends Handler {
         }
 
         user = userService.save(user);
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(responses, user,update);
+        return super.getHandlerByStatus(user.peekStatus()).getMessage(user,update);
     }
 }
