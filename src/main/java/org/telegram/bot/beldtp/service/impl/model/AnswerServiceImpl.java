@@ -16,6 +16,16 @@ public class AnswerServiceImpl implements AnswerService {
     private AnswerRepository answerRepository;
 
     @Override
+    public List<Answer> getAll() {
+        return answerRepository.getAll();
+    }
+
+    @Override
+    public List<Answer> get(Language language) {
+        return answerRepository.get(language);
+    }
+
+    @Override
     public Answer save(Answer answer) {
         return answerRepository.save(answer);
     }

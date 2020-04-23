@@ -51,13 +51,24 @@ public class MonthTimeHandler extends Handler {
     private YearTimeHandler yearTimeHandler;
 
     @Override
+    public String getText(User user, Update update) {
+        Incident incident = incidentService.getDraft(user);
+
+        if (incident == null || incident.getTime() == null) {
+            return super.getText(user, update);
+        }
+
+        return super.getText(user, update) + "\n\n" + incident.getTime().toString();
+    }
+
+    @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
         return getMonthOfYearButton(user, update, draft.getTime().getYear());
     }
 
     @Override
-    public List<TelegramResponse> handle( User user, Update update) {
+    public List<TelegramResponse> handle(User user, Update update) {
         List<TelegramResponse> transition = transaction(user, update);
 
         if (transition != null) {

@@ -145,7 +145,8 @@ public class ConfirmAddHandler extends Handler {
         responses.add(getAnswerCallbackQuery(answerService
                 .get(YOU_INCIDENT_BUILD, user.getLanguage()).getText(), user, update));
 
-        return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+        responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
+        return responses;
     }
 
     private TelegramResponse getAnswerCallbackQuery(String text, User user, Update update) {

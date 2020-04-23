@@ -38,7 +38,7 @@ public class TimeNowHandler extends Handler {
         time.setDay((byte) calendar.get(Calendar.DATE));
         time.setHour((byte) calendar.get(Calendar.HOUR_OF_DAY));
         time.setMinute((byte) calendar.get(Calendar.MINUTE));
-
+        time.setTimeInMillis(calendar.getTimeInMillis());
         while (!user.peekStatus().equals(addHandler.getType())){
             user.popStatus();
         }

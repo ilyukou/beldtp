@@ -2,6 +2,7 @@ package org.telegram.bot.beldtp.handler.subclasses.queue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.model.*;
@@ -101,13 +102,8 @@ public class RejectQueueHandler extends Handler {
             return transition;
         }
 
-        if (!update.hasCallbackQuery()) {
-            return null;
-        }
-
-        if (!(update.getCallbackQuery().getData().contains(VERIFY_BUTTON)
-                || update.getCallbackQuery().getData().contains(REJECT_BUTTON))) {
-            return null;
+        if (!isValid(user, update)) {
+            throw new BadRequestException();
         }
 
         String data = update.getCallbackQuery().getData();
@@ -134,5 +130,30 @@ public class RejectQueueHandler extends Handler {
         user = userService.save(user);
 
         return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+    }
+
+    private boolean isValid(User user, Update update) {
+        if (!update.hasCallbackQuery()) {
+            return false;
+        }
+
+        if (!(update.getCallbackQuery().getData().contains(VERIFY_BUTTON)
+                || update.getCallbackQuery().getData().contains(REJECT_BUTTON))) {
+            return false;
+        }
+
+        try {
+            String data = update.getCallbackQuery().getData();
+            String method = data.split("-")[0];
+            Long id = Long.parseLong(data.split("-")[1]);
+
+            if (!(method.equals(VERIFY_BUTTON) || method.equals(REJECT_BUTTON))) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 }

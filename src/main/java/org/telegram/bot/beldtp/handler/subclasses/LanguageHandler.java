@@ -32,10 +32,6 @@ public class LanguageHandler extends Handler {
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Language[] languages = Language.values();
 
-        if (user.getLanguage() == null) {
-            user.setLanguage(Language.BE);
-        }
-
         return new InlineKeyboardMarkup().setKeyboard(Arrays.stream(languages)
                 .map(language -> Collections.singletonList(new InlineKeyboardButton()
                         .setCallbackData(language.toString())
@@ -49,16 +45,20 @@ public class LanguageHandler extends Handler {
 
         Language[] languages = Language.values();
 
+        Language newLanguage = null;
+
         for (Language language : languages) {
             if (language.toString().equals(update.getCallbackQuery().getData())) {
-                user.setLanguage(language);
+                newLanguage = language;
                 break;
             }
         }
 
-        if (user.getLanguage() == null) {
+        if (newLanguage == null) {
             throw new BadRequestException();
         }
+
+        user.setLanguage(newLanguage);
 
         if (user.peekStatus().equals(getType())) {
             user.popStatus();

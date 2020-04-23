@@ -10,5 +10,7 @@ import java.util.List;
 public interface AnswerJpaRepository extends JpaRepository<Answer, Long> {
     List<Answer> findByType(String type);
 
+    List<Answer> findByLanguage(Language language);
+
     Answer findByTypeAndLanguage(String type, Language language);
 }

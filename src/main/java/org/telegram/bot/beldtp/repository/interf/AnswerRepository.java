@@ -15,4 +15,8 @@ public interface AnswerRepository {
     void delete(Answer answer);
 
     Answer get(Long id);
+
+    List<Answer> getAll();
+
+    List<Answer> get(Language language);
 }

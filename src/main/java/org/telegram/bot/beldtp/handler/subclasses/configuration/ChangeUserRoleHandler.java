@@ -37,7 +37,7 @@ public class ChangeUserRoleHandler extends Handler {
 
     @Override
     public List<TelegramResponse> handle(User user, Update update) {
-        if (!update.hasCallbackQuery() || !update.getCallbackQuery().getData().contains("-")) {
+        if (!isValid(user, update)) {
             return removeFromHandler(user, update);
         }
 
@@ -82,5 +82,25 @@ public class ChangeUserRoleHandler extends Handler {
 
         responses.addAll(removeFromHandler(user, update));
         return responses;
+    }
+
+    private boolean isValid(User user, Update update) {
+        if (!update.hasCallbackQuery() || !update.getCallbackQuery().getData().contains("-")) {
+            return false;
+        }
+
+        try {
+            String data = update.getCallbackQuery().getData();
+            String userRole = data.split("-")[0];
+            Long id = Long.valueOf(data.split("-")[1]);
+
+            if (id != null && (userRole != null || userRole.length() == 0)) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 }

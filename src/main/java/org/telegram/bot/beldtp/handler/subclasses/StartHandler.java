@@ -19,6 +19,8 @@ import java.util.Stack;
 @HandlerInfo(type = "start", accessRight = UserRole.USER)
 public class StartHandler extends Handler {
 
+    private static final Language DEFAULT_LANGUAGE = Language.RU;
+
     @Autowired
     private UserService userService;
 
@@ -29,17 +31,11 @@ public class StartHandler extends Handler {
     private MainHandler mainHandler;
 
     private TelegramResponse addStartMessage(User user, Update update){
-        Language language = Language.BE;
-
-        // If user has language set user language
-        if (user != null && user.getLanguage() != null){
-            language = user.getLanguage();
-        }
-
         return new TelegramResponse(
                 new SendMessage()
                         .setChatId(UpdateUtil.getChatId(update))
-                        .setText(getAnswer(language).getText())
+                        .setText(getAnswer(DEFAULT_LANGUAGE).getText())
+                        .setParseMode(super.getParseMode(user, update))
         );
     }
 
@@ -57,7 +53,7 @@ public class StartHandler extends Handler {
         stack.push(getType());
 
         // User not exist
-        if(user == null || user.getId() == null || !userService.isExist(user.getId())){
+        if (user == null || user.getId() == null || !userService.isExist(user.getId())) {
             stack.push(languageHandler.getType());
             user = new User(update);
 
@@ -67,8 +63,13 @@ public class StartHandler extends Handler {
         }
 
         user.setStatus(stack);
+
+        if (user.getLanguage() == null) {
+            user.setLanguage(DEFAULT_LANGUAGE);
+        }
+
         user = userService.save(user);
-        responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user,update));
+        responses.addAll(super.getHandlerByStatus(user.peekStatus()).getMessage(user, update));
         return responses;
     }
 
@@ -77,8 +78,7 @@ public class StartHandler extends Handler {
 
         if (user.getLanguage() != null){
             user.pushStatus(mainHandler.getType());
-//            user.setRole(UserRole.USER);
-            user.setRole(UserRole.ADMIN);
+            user.setRole(UserRole.USER);
 
         } else {
             Stack<String> status = new Stack<>();

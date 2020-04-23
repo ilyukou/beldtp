@@ -3,6 +3,7 @@ package org.telegram.bot.beldtp.handler.subclasses.add;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.exception.TextSizeException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackAndRejectIncidentHandler;
@@ -12,11 +13,10 @@ import org.telegram.bot.beldtp.model.TelegramResponse;
 import org.telegram.bot.beldtp.model.User;
 import org.telegram.bot.beldtp.model.UserRole;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
-import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
+import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Arrays;
@@ -98,10 +98,7 @@ public class AddTextHandler extends Handler {
             return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }
 
-        return Arrays.asList(new TelegramResponse(
-                new AnswerCallbackQuery()
-                        .setText(answerService.get(REQUIRED_TEXT, user.getLanguage()).getText())
-                        .setCallbackQueryId(update.getCallbackQuery().getId())));
+        throw new BadRequestException();
     }
 
     private boolean isValid(Update update) {

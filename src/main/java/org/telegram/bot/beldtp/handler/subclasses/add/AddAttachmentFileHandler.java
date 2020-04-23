@@ -4,15 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.exception.AttachmentFileSizeException;
+import org.telegram.bot.beldtp.exception.BadRequestException;
 import org.telegram.bot.beldtp.handler.Handler;
 import org.telegram.bot.beldtp.handler.subclasses.BackHandler;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.service.interf.model.AnswerService;
-import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
+import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
-import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.bot.beldtp.util.AttachmentFileUtil;
+import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -194,13 +195,7 @@ public class AddAttachmentFileHandler extends Handler {
         }
 
         if (!isValid(update, draft)) {
-            if (getType().equals(user.peekStatus())) {
-                user.popStatus();
-            }
-
-            user = userService.save(user);
-
-            return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
+            throw new BadRequestException();
         }
 
         AttachmentFile attachmentFile = attachmentFileUtil.getFromUpdate(update);

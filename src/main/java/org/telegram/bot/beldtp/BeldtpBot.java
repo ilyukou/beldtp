@@ -41,7 +41,7 @@ public class BeldtpBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        updateHandler.handle(update).forEach(this::executeTelegramResponse);
+        updateHandler.handle(update);
     }
 
     @PostConstruct
@@ -49,44 +49,40 @@ public class BeldtpBot extends TelegramLongPollingBot {
         LOGGER.info("username: {}, token: {}", username, token);
     }
 
-    public void executeTelegramResponse(TelegramResponse telegramResponse) {
-        try {
+    public void executeTelegramResponse(TelegramResponse telegramResponse) throws TelegramApiException {
+        if (telegramResponse.hasSendMessage()) {
+            execute(telegramResponse.getSendMessage());
 
-            if (telegramResponse.hasSendMessage()) {
-                execute(telegramResponse.getSendMessage());
+        } else if (telegramResponse.hasAnswerCallbackQuery()) {
+            execute(telegramResponse.getAnswerCallbackQuery());
 
-            } else if (telegramResponse.hasAnswerCallbackQuery()) {
-                execute(telegramResponse.getAnswerCallbackQuery());
+        } else if (telegramResponse.hasEditMessageText()) {
 
-            } else if (telegramResponse.hasEditMessageText()) {
-
-                try {
-                    execute(
-                            new AnswerCallbackQuery()
-                                    .setCallbackQueryId(telegramResponse.getUpdate().getCallbackQuery().getId()));
-                } catch (Exception e) {
-                    // ignore
-                }
-                execute(telegramResponse.getEditMessageText());
-
-            } else if (telegramResponse.hasDeleteMessage()) {
-                execute(telegramResponse.getDeleteMessage());
-
-            } else if (telegramResponse.hasEditMessageReplyMarkup()) {
-                execute(telegramResponse.getEditMessageReplyMarkup());
-
-            } else if (telegramResponse.hasEditMessageText()) {
-                execute(telegramResponse.getEditMessageText());
-
-            } else if (telegramResponse.hasSendMediaGroup()) {
-                execute(telegramResponse.getSendMediaGroup());
-
-            } else {
-
-                LOGGER.error("TelegramResponse is null");
+            // try to send AnswerCallbackQuery
+            // ignore because if throw Exception, that indicate a call back query was answered
+            try {
+                execute(
+                        new AnswerCallbackQuery()
+                                .setCallbackQueryId(telegramResponse.getUpdate().getCallbackQuery().getId()));
+            } catch (Exception e) {
+                // ignore
             }
-        } catch (TelegramApiException e) {
-            LOGGER.error("Failed to send message", e);
+            execute(telegramResponse.getEditMessageText());
+
+        } else if (telegramResponse.hasDeleteMessage()) {
+            execute(telegramResponse.getDeleteMessage());
+
+        } else if (telegramResponse.hasEditMessageReplyMarkup()) {
+            execute(telegramResponse.getEditMessageReplyMarkup());
+
+        } else if (telegramResponse.hasEditMessageText()) {
+            execute(telegramResponse.getEditMessageText());
+
+        } else if (telegramResponse.hasSendMediaGroup()) {
+            execute(telegramResponse.getSendMediaGroup());
+
+        } else {
+            LOGGER.error("TelegramResponse is null", telegramResponse);
         }
     }
 }

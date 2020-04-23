@@ -53,9 +53,9 @@ public class UserProfileHandler extends Handler {
 
             if (foundUser == null) {
                 return getTelegramResponseWhenUserNotExist(update, user);
-            } else {
-                return getMessageWhenUserFound(update, user, foundUser);
             }
+
+            return getMessageWhenUserFound(update, user, foundUser);
         } else {
             throw new BadRequestException();
         }

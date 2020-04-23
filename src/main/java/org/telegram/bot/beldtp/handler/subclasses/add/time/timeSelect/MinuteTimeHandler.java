@@ -34,6 +34,17 @@ public class MinuteTimeHandler extends Handler {
     private AddHandler addHandler;
 
     @Override
+    public String getText(User user, Update update) {
+        Incident incident = incidentService.getDraft(user);
+
+        if (incident == null || incident.getTime() == null) {
+            return super.getText(user, update);
+        }
+
+        return super.getText(user, update) + "\n\n" + incident.getTime().toString();
+    }
+
+    @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Incident incident = incidentService.getDraft(user);
         return getMinuteButton(user, update, incident.getTime());
@@ -56,6 +67,15 @@ public class MinuteTimeHandler extends Handler {
         Time time = draft.getTime();
 
         time.setMinute(Byte.parseByte(update.getCallbackQuery().getData()));
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, time.getYear());
+        calendar.set(Calendar.MONTH, time.getMonth());
+        calendar.set(Calendar.DATE, time.getDay());
+        calendar.set(Calendar.HOUR_OF_DAY, time.getHour());
+        calendar.set(Calendar.MINUTE, time.getMinute());
+
+        time.setTimeInMillis(calendar.getTimeInMillis());
 
         draft.setTime(time);
 

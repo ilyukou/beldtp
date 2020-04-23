@@ -33,6 +33,17 @@ public class HourTimeHandler extends Handler {
     private UserService userService;
 
     @Override
+    public String getText(User user, Update update) {
+        Incident incident = incidentService.getDraft(user);
+
+        if (incident == null || incident.getTime() == null) {
+            return super.getText(user, update);
+        }
+
+        return super.getText(user, update) + "\n\n" + incident.getTime().toString();
+    }
+
+    @Override
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 

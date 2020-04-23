@@ -40,6 +40,7 @@ public abstract class Handler {
     private String type;
 
     private byte maxButtonInRow;
+    private static final String START_HANDLER_TYPE = "start";
 
     public InlineKeyboardMarkup getInlineKeyboardMarkup(User user, Update update) {
         return InlineKeyboardMarkupUtil
@@ -75,10 +76,6 @@ public abstract class Handler {
     }
 
     public List<TelegramResponse> getMessage(User user, Update update) {
-
-        if (user.getLanguage() == null) { // FIXME - add default language for user which not has language
-            user.setLanguage(Language.BE);
-        }
 
         if (update.hasCallbackQuery()) {
             return getEditMessageText(user, update);

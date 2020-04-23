@@ -148,4 +148,18 @@ public class User {
     public void setStatus(Stack<String> status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
+                ", role=" + role +
+                ", incident=" + incident +
+                ", language=" + language +
+                ", status=" + status +
+                '}';
+    }
 }

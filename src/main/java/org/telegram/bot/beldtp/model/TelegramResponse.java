@@ -127,4 +127,17 @@ public class TelegramResponse {
     public void setUpdate(Update update) {
         this.update = update;
     }
+
+    @Override
+    public String toString() {
+        return "TelegramResponse{" +
+                "update=" + update +
+                ", deleteMessage=" + deleteMessage +
+                ", sendMessage=" + sendMessage +
+                ", answerCallbackQuery=" + answerCallbackQuery +
+                ", editMessageText=" + editMessageText +
+                ", editMessageReplyMarkup=" + editMessageReplyMarkup +
+                ", sendMediaGroup=" + sendMediaGroup +
+                '}';
+    }
 }

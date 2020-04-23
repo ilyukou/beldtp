@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "incidentdraft")
+@Table(name = "incident")
 public class Incident {
 
     @Id
@@ -119,6 +119,19 @@ public class Incident {
         }
 
         return inc.id.equals(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Incident{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", attachmentFiles=" + attachmentFiles +
+                ", time=" + time +
+                ", location=" + location +
+                ", user=" + user +
+                ", type=" + type +
+                '}';
     }
 }
 

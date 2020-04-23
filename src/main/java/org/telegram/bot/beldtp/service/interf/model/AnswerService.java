@@ -6,6 +6,11 @@ import org.telegram.bot.beldtp.model.Language;
 import java.util.List;
 
 public interface AnswerService {
+
+    List<Answer> getAll();
+
+    List<Answer> get(Language language);
+
     Answer save(Answer answer);
 
     void delete(Answer answer);

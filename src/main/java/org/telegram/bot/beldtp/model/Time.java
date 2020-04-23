@@ -13,6 +13,8 @@ public class Time {
     @OneToOne(mappedBy = "time")
     private Incident incident;
 
+    private long timeInMillis;
+
     private Integer year;
 
     private Byte day;
@@ -24,6 +26,14 @@ public class Time {
     private Byte minute;
 
     public Time() {
+    }
+
+    public long getTimeInMillis() {
+        return timeInMillis;
+    }
+
+    public void setTimeInMillis(long timeInMillis) {
+        this.timeInMillis = timeInMillis;
     }
 
     public Long getId() {
@@ -84,10 +94,46 @@ public class Time {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append(hour).append(":").append(minute)
-                .append(" ")
-                .append(day).append("/").append(month + 1).append("/").append(year)
-                .toString();
+        StringBuilder builder = new StringBuilder();
+
+        if (hour == null) {
+            builder.append("hh");
+        } else {
+            builder.append(hour);
+        }
+
+        builder.append(":");
+
+        if (minute == null) {
+            builder.append("mm");
+        } else {
+            builder.append(minute);
+        }
+
+        builder.append(" ");
+
+        if (day == null) {
+            builder.append("dd");
+        } else {
+            builder.append(day);
+        }
+
+        builder.append("/");
+
+        if (month == null) {
+            builder.append("mm");
+        } else {
+            builder.append(month + 1);
+        }
+
+        builder.append("/");
+
+        if (year == null) {
+            builder.append("yy");
+        } else {
+            builder.append(year);
+        }
+
+        return builder.toString();
     }
 }

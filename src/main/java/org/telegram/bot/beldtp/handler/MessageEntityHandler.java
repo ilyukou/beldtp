@@ -2,8 +2,7 @@ package org.telegram.bot.beldtp.handler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
-import org.telegram.bot.beldtp.handler.subclasses.HelpHandler;
-import org.telegram.bot.beldtp.handler.subclasses.MainHandler;
+import org.telegram.bot.beldtp.handler.subclasses.LanguageHandler;
 import org.telegram.bot.beldtp.handler.subclasses.StartHandler;
 import org.telegram.bot.beldtp.model.Incident;
 import org.telegram.bot.beldtp.model.TelegramResponse;
@@ -14,6 +13,7 @@ import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -33,11 +33,14 @@ public class MessageEntityHandler extends Handler {
     @Autowired
     private StartHandler startHandler;
 
+    @Autowired
+    private LanguageHandler languageHandler;
+
     @Override
     public List<TelegramResponse> getMessage(User user, Update update) {
 
-        if(update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST).getType()
-                .equals(BOT_COMMAND_MESSAGE_ENTITY_TYPE)){
+        if (update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST).getType()
+                .equals(BOT_COMMAND_MESSAGE_ENTITY_TYPE)) {
             return getMessageToCommand(update.getMessage().getEntities().get(DEFAULT_REACT_COMMAND_ID_IN_LIST),
                     user, update);
         }
@@ -46,9 +49,25 @@ public class MessageEntityHandler extends Handler {
     }
 
     private List<TelegramResponse> getMessageToCommand(MessageEntity messageEntity,
-                                                       User user, Update update){
+                                                       User user, Update update) {
+        List<String> strings = new ArrayList<>();
 
-        if(messageEntity.getText().equals(START_COMMAND)){
+        if (user.getStatus() != null) {
+            strings = new ArrayList<>(user.getStatus());
+        }
+
+        // user in startHandler
+        if (strings.size() == 1 && strings.get(0).equals(startHandler.getType())) {
+            return null;
+        }
+
+        // bot wait language from user. Not access to restart bot
+        if (strings.size() == 2 && strings.get(0).equals(startHandler.getType())
+                && strings.get(1).equals(languageHandler.getType())) {
+            return null;
+        }
+
+        if (messageEntity.getText().equals(START_COMMAND)) {
             Stack<String> status = new Stack<>();
             status.push(startHandler.getType());
 
@@ -56,7 +75,7 @@ public class MessageEntityHandler extends Handler {
             user = userService.save(user);
 
             Incident draft = incidentService.getDraft(user);
-            if(draft != null){
+            if (draft != null) {
                 incidentService.delete(draft);
             }
 
