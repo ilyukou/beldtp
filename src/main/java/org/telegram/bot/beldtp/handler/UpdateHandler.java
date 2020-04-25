@@ -86,9 +86,10 @@ public class UpdateHandler {
             response = null;
 
         } catch (NullPointerException e) { // any other Exception throw from Handlers
-            LOGGER.error("Null", user, update);
+            LOGGER.error("NullPointerException in " + update.toString() + " ; from " + user.toString(), e);
             response = null;
         } catch (Exception e) { // any other Exception throw from Handlers
+            LOGGER.error("Exception in " + update.toString() + " ; from " + user.toString(), e);
             response = null;
         }
 
@@ -99,7 +100,7 @@ public class UpdateHandler {
         boolean result = execute(response);
 
         if (!result) {
-            getFalseResultResponse(update);
+            getFalseResultResponse(user,update);
         }
     }
 
@@ -122,14 +123,15 @@ public class UpdateHandler {
         return true;
     }
 
-    private void getFalseResultResponse(Update update) {
+    private void getFalseResultResponse(User user, Update update) {
         List<TelegramResponse> response = exceptionHandler  // FIXME - add false result response
                 .getMessage(userService.get(UpdateUtil.getChatId(update)), update);
 
         boolean result = execute(response);
 
         if (!result) {
-            LOGGER.error("Uncorrect telegram update or not suggested message", update);
+            LOGGER.error("Uncorrect telegram update or not suggested message : "
+                    + update.toString() + " ; from " + user.toString());
         }
     }
 }
