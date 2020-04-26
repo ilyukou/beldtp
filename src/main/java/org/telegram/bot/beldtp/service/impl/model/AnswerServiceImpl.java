@@ -49,4 +49,33 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer get(String type, Language language) {
         return answerRepository.get(type,language);
     }
+
+    @Override
+    public String getKey(String type, Language language) {
+        if(type == null || language == null){
+            return null;
+        }
+
+        return language.name() + "-" + type;
+    }
+
+    @Override
+    public Answer getByKey(String key) {
+        String languageSrt = key.split("-")[0];
+        String type = key.split("-")[1];
+
+        Language language = null;
+
+        for (Language lang : Language.values()){
+            if (lang.name().equals(languageSrt)){
+                language = lang;
+            }
+        }
+
+        if(language == null || type == null){
+            return null;
+        }
+
+        return get(type,language);
+    }
 }

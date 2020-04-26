@@ -20,4 +20,8 @@ public interface AnswerService {
     List<Answer> get(String type);
 
     Answer get(String type, Language language);
+
+    String getKey(String type, Language language);
+
+    Answer getByKey(String key);
 }
