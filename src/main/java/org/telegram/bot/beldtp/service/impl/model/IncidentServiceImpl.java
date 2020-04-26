@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.repository.interf.IncidentRepository;
+import org.telegram.bot.beldtp.service.interf.model.AnswerService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -20,6 +21,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class IncidentServiceImpl implements IncidentService {
+
+    private static final String LINK = "link";
+
+    private static final Language DEFAULT_INCIDENT_LANGUAGE = Language.BE;
+
+    @Autowired
+    private AnswerService answerService;
 
     @Autowired
     private ResourcesService resourcesService;
@@ -80,6 +88,26 @@ public class IncidentServiceImpl implements IncidentService {
                 if(attachmentFile.getCaption() != null){
                     text.append(attachmentFile.getCaption()).append("\n");
                 }
+            }
+
+            if(incident.getLink() != null && incident.getLink().size() > 0){
+                List<String> links = new ArrayList<>(incident.getLink());
+                text.append(
+                        "[" + answerService.get(LINK, DEFAULT_INCIDENT_LANGUAGE).getText() +
+                                "](" + links.get(0) + ")"
+                );
+
+                if (incident.getLink().size() > 1){
+                    for (int i = 1; i < incident.getLink().size() ; i++) {
+                        text.append(
+                                ", [" + answerService.get(LINK, DEFAULT_INCIDENT_LANGUAGE).getText() +
+                                        "](" + links.get(i) + ")"
+                        );
+                    }
+                }
+
+
+                text.append("\n").append("\n");
             }
 
             if(incident.getLocation() != null){
