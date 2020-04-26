@@ -107,6 +107,9 @@ public class Time {
         if (minute == null) {
             builder.append("mm");
         } else {
+            if(minute < 10){
+                builder.append("0");
+            }
             builder.append(minute);
         }
 
