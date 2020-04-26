@@ -1,7 +1,9 @@
 package org.telegram.bot.beldtp.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "storage")
@@ -14,7 +16,7 @@ public class Storage {
     private StorageType type;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "storage")
-    private List<Resource> resources;
+    private List<Resource> resources = new ArrayList<>();
 
     public Storage(StorageType type) {
         this.type = type;
@@ -45,5 +47,22 @@ public class Storage {
 
     public void setResources(List<Resource> resources) {
         this.resources = resources;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Storage{" +
+                "id=" + id +
+                ", type=" + type);
+
+        if(resources != null){
+            builder.append(", resources=" + resources
+                    .stream()
+                    .map(Resource::getId).collect(Collectors.toList()));
+        }
+
+        return builder.toString();
     }
 }

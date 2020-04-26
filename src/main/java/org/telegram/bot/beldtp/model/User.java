@@ -3,8 +3,10 @@ package org.telegram.bot.beldtp.model;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user")
@@ -22,7 +24,7 @@ public class User {
     private UserRole role;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
-    private Set<Incident> incident;
+    private Set<Incident> incident = new HashSet<>();
 
     private Language language;
 
@@ -157,7 +159,7 @@ public class User {
                 ", lastName='" + lastName + '\'' +
                 ", username='" + username + '\'' +
                 ", role=" + role +
-                ", incident=" + incident +
+                ", incident=" + incident.stream().map(Incident::getId).collect(Collectors.toList()) +
                 ", language=" + language +
                 ", status=" + status +
                 '}';

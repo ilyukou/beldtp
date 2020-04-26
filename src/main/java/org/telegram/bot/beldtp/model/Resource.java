@@ -58,5 +58,27 @@ public class Resource {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Resource{" +
+                "id=" + id);
+
+        if(attachmentFile != null){
+            builder.append(", attachmentFile=" + attachmentFile);
+        }
+
+        if(storage != null){
+            builder.append(", storage=" + storage);
+        }
+
+        builder.append(", fileName='" + fileName + '\'');
+
+        builder.append('}');
+
+        return builder.toString();
+    }
 }
 

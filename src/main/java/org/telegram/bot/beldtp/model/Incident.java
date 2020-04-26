@@ -2,7 +2,9 @@ package org.telegram.bot.beldtp.model;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "incident")
@@ -12,6 +14,7 @@ public class Incident {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Lob
     private String text;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "incident", orphanRemoval = true, cascade = CascadeType.ALL)
@@ -123,15 +126,38 @@ public class Incident {
 
     @Override
     public String toString() {
-        return "Incident{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", attachmentFiles=" + attachmentFiles +
-                ", time=" + time +
-                ", location=" + location +
-                ", user=" + user +
-                ", type=" + type +
-                '}';
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Incident{" +
+                "id=" + id);
+
+        if(text != null){
+            builder.append(", text='" + text + '\'');
+        }
+
+        builder.append(", attachmentFiles=")
+                .append(attachmentFiles
+                        .stream()
+                        .map(AttachmentFile::getId)
+                        .collect(Collectors.toList()));
+
+        if(time != null){
+            builder.append(", time=" + time);
+        }
+
+        if(location != null){
+            builder.append(", location=" + location);
+        }
+
+        if(user != null){
+            builder.append(", user=" + user);
+        }
+
+        builder.append(", type=" + type );
+
+        builder.append('}');
+
+        return builder.toString();
     }
 }
 

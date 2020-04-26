@@ -91,4 +91,30 @@ public class AttachmentFile {
     public void setUploadDate(long uploadDate) {
         this.uploadDate = uploadDate;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("AttachmentFile{");
+
+        builder.append("id=" + id +
+                ", uploadDate=" + uploadDate +
+                ", caption='" + caption + '\'' +
+                ", attachmentFileType=" + attachmentFileType);
+
+        if(incident != null){
+            builder.append(", incident=" + incident.getId());
+        }
+
+        builder.append(", fileId='" + fileId + '\'');
+
+        if(resource != null){
+            builder.append(", resource=" + resource.getId());
+        }
+
+        builder.append('}');
+
+        return builder.toString();
+    }
 }
