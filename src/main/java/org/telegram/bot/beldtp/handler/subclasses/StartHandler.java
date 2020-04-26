@@ -78,8 +78,11 @@ public class StartHandler extends Handler {
 
         if (user.getLanguage() != null){
             user.pushStatus(mainHandler.getType());
-            user.setRole(UserRole.USER);
 
+            if(user.getRole() == null){
+                user.setRole(UserRole.USER);
+            }
+            
         } else {
             Stack<String> status = new Stack<>();
 
