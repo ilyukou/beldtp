@@ -47,7 +47,13 @@ public class AddTimeHandler extends Handler {
     public String getLabel(User user, Update update) {
         Incident draft = incidentService.getDraft(user);
 
-        if (draft.getTime() != null) {
+        if (draft.getTime() != null
+                && draft.getTime().getMinute() != null
+                && draft.getTime().getHour() != null
+                && draft.getTime().getDay() != null
+                && draft.getTime().getMonth() != null
+                && draft.getTime().getYear() != null
+        ) {
             StringBuilder builder = new StringBuilder();
 
             if(draft.getTime().getHour() < 10){
