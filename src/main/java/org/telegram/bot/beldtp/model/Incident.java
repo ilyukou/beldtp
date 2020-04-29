@@ -16,9 +16,6 @@ public class Incident {
     @Lob
     private String text;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> link = new HashSet<>();
-
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "incident", orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<AttachmentFile> attachmentFiles = new HashSet<>();
 
@@ -95,14 +92,6 @@ public class Incident {
         this.type = type;
     }
 
-    public Set<String> getLink() {
-        return link;
-    }
-
-    public void setLink(Set<String> link) {
-        this.link = link;
-    }
-
     public boolean hasTime() {
         return time != null;
     }
@@ -164,8 +153,6 @@ public class Incident {
         }
 
         builder.append(", type=" + type );
-
-        builder.append(", link=" + link);
 
         builder.append('}');
 

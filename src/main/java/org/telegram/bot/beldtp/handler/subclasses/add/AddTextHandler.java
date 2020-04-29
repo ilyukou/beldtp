@@ -17,7 +17,6 @@ import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
 import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.UserService;
 import org.telegram.bot.beldtp.util.EmojiUtil;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -35,8 +34,6 @@ public class AddTextHandler extends Handler {
     private static final String TEXT_WAS_ADDED = "textWasAdded";
 
     private static final String TEXT_HAS_ENTITIES = "textHasEntities";
-
-    private static final String LINK = "link";
 
     @Autowired
     private BackHandler backHandler;
@@ -68,37 +65,12 @@ public class AddTextHandler extends Handler {
         if(draft.getText() != null){
             text.append(answerService.get(TEXT_WAS_ADDED, user.getLanguage()).getText())
                     .append("\n\n")
-                    .append("_" + draft.getText() + "_");
+                    .append(draft.getText());
         } else {
             text.append(getAnswer(user.getLanguage()).getText());
         }
 
-        if(draft.getLink() != null && draft.getLink().size() != 0){
-
-            text.append("\n\n");
-
-            List<String> links = new ArrayList<>(draft.getLink());
-            text.append(
-                    "[" + answerService.get(LINK, user.getLanguage()).getText() +
-                            "](" + links.get(0) + ")"
-            );
-
-            if (draft.getLink().size() > 1){
-                for (int i = 1; i < draft.getLink().size() ; i++) {
-                    text.append(
-                            ", [" + answerService.get(LINK, user.getLanguage()).getText() +
-                                    "](" + links.get(i) + ")"
-                    );
-                }
-            }
-        }
-
         return text.toString();
-    }
-
-    @Override
-    public String getParseMode(User user, Update update) {
-        return ParseMode.MARKDOWN;
     }
 
     @Override
@@ -134,7 +106,8 @@ public class AddTextHandler extends Handler {
             if(update.getMessage().hasEntities()){
 
                 if(update.getMessage().getEntities().get(0).getType().equals("url")){
-                    draft = handleUrl(draft, update);
+                    draft.setText(wrapUrlInMarkdown(draft, update));
+
                 } else {
                     SendMessage message = new SendMessage();
                     message.setText(answerService.get(TEXT_HAS_ENTITIES, user.getLanguage()).getText());
@@ -170,23 +143,18 @@ public class AddTextHandler extends Handler {
         return Arrays.asList(backHandler);
     }
 
-    private Incident handleUrl(Incident incident, Update update){
+    private String wrapUrlInMarkdown(Incident incident, Update update){
         String text = update.getMessage().getText();
 
-        incident.setLink(update.getMessage().getEntities()
+        List<String> listUrl = update.getMessage().getEntities()
                 .stream()
                 .map(MessageEntity::getText)
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toList());
 
-        // user send not only url
-        if(text != null && incident.getLink() != null && incident.getLink().size() > 0){
-            for (String url : incident.getLink()){
-                text = text.replaceFirst(url,"");
-            }
+        for (String string : listUrl){
+            text = text.replaceFirst(string, "[" + string + "](" + string + ")");
         }
 
-        incident.setText(text);
-
-        return incident;
+        return text;
     }
 }

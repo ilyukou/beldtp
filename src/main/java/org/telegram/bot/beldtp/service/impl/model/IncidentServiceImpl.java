@@ -90,26 +90,6 @@ public class IncidentServiceImpl implements IncidentService {
                 }
             }
 
-            if(incident.getLink() != null && incident.getLink().size() > 0){
-                List<String> links = new ArrayList<>(incident.getLink());
-                text.append(
-                        "[" + answerService.get(LINK, DEFAULT_INCIDENT_LANGUAGE).getText() +
-                                "](" + links.get(0) + ")"
-                );
-
-                if (incident.getLink().size() > 1){
-                    for (int i = 1; i < incident.getLink().size() ; i++) {
-                        text.append(
-                                ", [" + answerService.get(LINK, DEFAULT_INCIDENT_LANGUAGE).getText() +
-                                        "](" + links.get(i) + ")"
-                        );
-                    }
-                }
-
-
-                text.append("\n").append("\n");
-            }
-
             if(incident.getLocation() != null){
                 text.append(incident.getLocation().toString());
 
