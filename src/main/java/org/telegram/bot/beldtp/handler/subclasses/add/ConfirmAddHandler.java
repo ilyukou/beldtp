@@ -70,10 +70,7 @@ public class ConfirmAddHandler extends Handler {
         Incident draft = incidentService.getDraft(user);
 
         if (!update.hasCallbackQuery() || draft == null) {
-            if (user.peekStatus().equals(getType())) {
-                user.popStatus();
-                user = userService.save(user);
-            }
+            user = removeThisHandler(user);
 
             return super.getHandlerByStatus(user.peekStatus()).getMessage(user, update);
         }

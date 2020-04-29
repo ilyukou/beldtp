@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class ChannelPublishListener {
 
-    private static final long REPEAT_TIME = 10000;
+    private static final long REPEAT_TIME = 60 * 1000; // one minute
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelPublishListener.class);
 

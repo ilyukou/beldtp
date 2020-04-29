@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.bot.beldtp.model.*;
 import org.telegram.bot.beldtp.model.telegram.api.TelegramFileId;
-import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.AttachmentFileService;
+import org.telegram.bot.beldtp.service.interf.model.IncidentService;
 import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
 import org.telegram.bot.beldtp.service.interf.model.StorageService;
 import org.telegram.bot.beldtp.util.GenerateFileNameUtil;
@@ -21,6 +21,8 @@ import java.util.Set;
 
 @Component
 public class UploaderAttachmentFileToS3Listener {
+
+    private static final long REPEAT_TIME = 60 * 1000; // one minute
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UploaderAttachmentFileToS3Listener.class);
 
@@ -47,7 +49,7 @@ public class UploaderAttachmentFileToS3Listener {
 
     private RestTemplate restTemplate = new RestTemplate();
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = REPEAT_TIME)
     public void downloadFileFromTelegramApi() throws Exception {
 
         List<Incident> incidents = incidentService.get(IncidentType.BUILD);
