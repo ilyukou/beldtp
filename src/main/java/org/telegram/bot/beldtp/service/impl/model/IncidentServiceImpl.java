@@ -10,6 +10,7 @@ import org.telegram.bot.beldtp.service.interf.model.ResourcesService;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaDocument;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo;
 
@@ -117,7 +118,9 @@ public class IncidentServiceImpl implements IncidentService {
             incident.getAttachmentFiles()
                     .forEach(media -> {
 
-                        if (media.getAttachmentFileType() == AttachmentFileType.PHOTO) {
+                        if (media.getAttachmentFileType() == AttachmentFileType.PHOTO
+                                || media.getAttachmentFileType() == AttachmentFileType.PHOTO_JPG
+                                || media.getAttachmentFileType() ==AttachmentFileType.PHOTO_PNG) {
                             InputMedia inputMedia = new InputMediaPhoto(null, media.getCaption());
                             InputStream stream = new ByteArrayInputStream(resourcesService.get(media.getResource()));
                             inputMedia.setMedia(stream, media.getResource().getFileName());
@@ -131,6 +134,18 @@ public class IncidentServiceImpl implements IncidentService {
 
                         if (media.getAttachmentFileType() == AttachmentFileType.VIDEO) {
                             InputMedia inputMedia = new InputMediaVideo(null, media.getCaption());
+                            InputStream stream = new ByteArrayInputStream(resourcesService.get(media.getResource()));
+                            inputMedia.setMedia(stream, media.getResource().getFileName());
+                            try {
+                                stream.close();
+                            } catch (IOException e) {
+                                // ignore
+                            }
+                            inputMediaList.add(inputMedia);
+                        }
+                        if (media.getAttachmentFileType() == AttachmentFileType.PDF
+                                || media.getAttachmentFileType() == AttachmentFileType.DOCX) {
+                            InputMedia inputMedia = new InputMediaDocument(null, media.getCaption());
                             InputStream stream = new ByteArrayInputStream(resourcesService.get(media.getResource()));
                             inputMedia.setMedia(stream, media.getResource().getFileName());
                             try {
