@@ -97,7 +97,7 @@ public class IncidentServiceImpl implements IncidentService {
             }
 
             list.forEach(inputMedia -> {
-                inputMedia.setParseMode(ParseMode.MARKDOWN);
+                inputMedia.setParseMode(ParseMode.HTML);
                 inputMedia.setCaption(null);
             });
 

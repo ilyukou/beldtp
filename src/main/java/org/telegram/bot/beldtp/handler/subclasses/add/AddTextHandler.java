@@ -152,7 +152,8 @@ public class AddTextHandler extends Handler {
                 .collect(Collectors.toList());
 
         for (String string : listUrl){
-            text = text.replaceFirst(string, "[" + string + "](" + string + ")");
+//            text = text.replaceFirst(string, "[" + string + "](" + string + ")");
+            text = text.replaceFirst(string, "<a href=\"" + string + "\">" + string + "</a>");
         }
 
         return text;

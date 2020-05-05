@@ -152,8 +152,12 @@ public class Location {
         StringBuilder builder = new StringBuilder();
 
         if(getLongitude() != null && getLatitude() != null){
-            builder.append("[Месцазнаходжанне](https://www.google.com/maps?q=")
-                    .append(getLatitude()).append(",").append(getLongitude()).append(")").append("\n");
+//            builder.append("[Месцазнаходжанне](https://www.google.com/maps?q=")
+//                    .append(getLatitude()).append(",").append(getLongitude()).append(")").append("\n");
+            builder.append("<a href=\"https://www.google.com/maps?q=")
+                    .append(getLatitude()).append(",").append(getLongitude()).append("\">")
+                    .append("Месцазнаходжанне").append("</a>")
+                    .append("\n");
         }
 
         if(getCountry() != null){

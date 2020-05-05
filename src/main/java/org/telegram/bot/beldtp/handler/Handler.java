@@ -93,7 +93,7 @@ public abstract class Handler {
     }
 
     public String getParseMode(User user, Update update) {
-        return ParseMode.MARKDOWN;
+        return ParseMode.HTML;
     }
 
     public List<TelegramResponse> handle(User user, Update update) {
