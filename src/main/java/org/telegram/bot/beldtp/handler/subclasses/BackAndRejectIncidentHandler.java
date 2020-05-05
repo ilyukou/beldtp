@@ -3,12 +3,8 @@ package org.telegram.bot.beldtp.handler.subclasses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.bot.beldtp.annotation.HandlerInfo;
 import org.telegram.bot.beldtp.handler.Handler;
-import org.telegram.bot.beldtp.model.Incident;
-import org.telegram.bot.beldtp.model.TelegramResponse;
-import org.telegram.bot.beldtp.model.User;
-import org.telegram.bot.beldtp.model.UserRole;
-import org.telegram.bot.beldtp.service.interf.model.IncidentService;
-import org.telegram.bot.beldtp.service.interf.model.UserService;
+import org.telegram.bot.beldtp.model.*;
+import org.telegram.bot.beldtp.service.interf.model.*;
 import org.telegram.bot.beldtp.util.EmojiUtil;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -23,6 +19,9 @@ public class BackAndRejectIncidentHandler extends Handler {
 
     @Autowired
     private IncidentService incidentService;
+
+    @Autowired
+    private LocationService locationService;
 
     @Autowired
     private MainHandler mainHandler;
@@ -51,6 +50,10 @@ public class BackAndRejectIncidentHandler extends Handler {
             Stack<String> stack = new Stack<>();
             stack.push(startHandler.getType());
             user.setStatus(stack);
+        }
+
+        if(draft.getLocation() != null){
+            locationService.delete(draft.getLocation());
         }
 
         user.remove(draft);

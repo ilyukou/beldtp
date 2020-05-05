@@ -16,4 +16,9 @@ public class LocationRepositoryImpl implements LocationRepository {
     public Location save(Location location) {
         return locationJpaRepository.save(location);
     }
+
+    @Override
+    public void delete(Location location) {
+        locationJpaRepository.delete(location);
+    }
 }
