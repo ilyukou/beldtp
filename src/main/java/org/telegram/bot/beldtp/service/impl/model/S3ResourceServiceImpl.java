@@ -1,6 +1,7 @@
 package org.telegram.bot.beldtp.service.impl.model;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +73,9 @@ public class S3ResourceServiceImpl implements ResourcesService {
     public Resource save(byte[] bytes, Resource resource)  {
 
         InputStream inputStream = new ByteArrayInputStream(bytes);
-
+        amazonS3.setBucketAcl(bucketName, CannedAccessControlList.PublicRead);
         amazonS3.putObject(bucketName, resource.getFileName(), inputStream, null);
+        amazonS3.setObjectAcl(bucketName, resource.getFileName(), CannedAccessControlList.PublicRead);
 
         Storage storage = storageService.get(StorageType.S3);
         resource.setStorage(storage);
