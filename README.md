@@ -54,6 +54,9 @@ Each new incident will be published in the [channel](http://t.me/beldtp)
 
 ___
 ### Change log
+#### v0.1.7
+* Bot can be parse location from String. Available format of string "53.694086, 23.810653" (latitude, longitude)
+
 #### v0.1.6
 * All new files are automatically public for reading.
 * Auto generate backup file and push to S3 ( schedule a hour )

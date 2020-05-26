@@ -105,7 +105,58 @@ public class AddLocationHandler extends Handler {
             return getMessage(user, update);
         }
 
+        if(update.hasMessage() && update.getMessage().hasText()){
+
+            try {
+                if(isStringHasLocationCoordinates(update.getMessage().getText())){
+                    Incident draft = incidentService.getDraft(user);
+
+                    // latitude, longitude
+                    // 53.694086, 23.810653
+                    String[] coordinates = update.getMessage().getText().split(",");
+
+                    Float latitude = Float.parseFloat(coordinates[0]);
+                    Float longitude = Float.parseFloat(coordinates[1]);
+
+                    Location location = geoCoderService.parse(longitude, latitude);
+
+
+                    location.setIncident(draft);
+                    location = locationRepository.save(location);
+
+                    draft.setLocation(location);
+
+                    draft = incidentService.save(draft);
+                    user = userService.save(user);
+
+                    return getMessage(user, update);
+                }
+            } catch (Exception e) {
+                // ignore
+                // in below code handler will be throw exception to upper level
+            }
+        }
+
         throw new BadRequestException();
+    }
+
+    boolean isStringHasLocationCoordinates(String text){
+        // latitude, longitude
+        // 53.694086, 23.810653
+        String[] coordinates = text.split(",");
+
+        if(coordinates.length != 2){
+            return false;
+        }
+
+        try {
+            Float latitude = Float.parseFloat(coordinates[0]);
+            Float longitude = Float.parseFloat(coordinates[1]);
+        } catch (Exception e){
+            return false;
+        }
+
+        return true;
     }
 
     @Override
